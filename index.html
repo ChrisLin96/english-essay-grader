@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>英语作文批改 · Essay Grader</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <header class="app-header">
+    <button class="header-btn back-btn" id="backBtn" title="返回" aria-label="返回">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+    <h1 class="app-title" id="essayTitle">英语作文批改</h1>
+    <div class="header-actions">
+      <button class="header-btn icon-btn" id="wordCountBtn" title="字数统计" aria-label="字数统计">
+        <span class="badge-text" id="wordCount">0</span>
+        <span class="badge-label">word</span>
+      </button>
+      <button class="header-btn icon-btn" id="settingsBtn" title="设置" aria-label="设置">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主体内容 -->
+  <main class="app-main" id="appMain">
+    <!-- 加载中状态 -->
+    <div class="loading-state" id="loadingState" hidden>
+      <div class="loading-spinner"></div>
+      <p class="loading-text" id="loadingText">AI 正在批改你的作文...</p>
+      <div class="loading-progress" id="loadingProgress">
+        <div class="loading-progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- 空状态 / 欢迎页 -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-illustration">
+        <svg viewBox="0 0 120 120" width="100" height="100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="15" width="70" height="90" rx="6" fill="#FFF1F2" stroke="#FECDD3" stroke-width="2"/>
+          <line x1="32" y1="35" x2="78" y2="35" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+          <line x1="32" y1="48" x2="78" y2="48" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+          <line x1="32" y1="61" x2="65" y2="61" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+          <line x1="32" y1="74" x2="78" y2="74" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+          <line x1="32" y1="87" x2="55" y2="87" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="85" cy="40" r="18" fill="#F43F5E"/>
+          <text x="85" y="46" text-anchor="middle" fill="white" font-size="18" font-weight="bold">A</text>
+          <circle cx="95" cy="80" r="12" fill="#FCA5A5"/>
+          <path d="M91 80 L95 84 L99 78" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="empty-title">开始你的第一次作文批改</h2>
+      <p class="empty-desc">拍照、上传图片或直接输入英文，AI 会逐句标注错误并给出中肯建议</p>
+      <div class="empty-actions">
+        <button class="btn btn-primary" id="emptyStartBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          拍照 / 上传图片
+        </button>
+        <button class="btn btn-secondary" id="emptyTypeBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          直接输入文本
+        </button>
+        <button class="btn btn-text" id="emptyDemoBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          查看示例效果
+        </button>
+      </div>
+    </div>
+
+    <!-- 批改结果（左右对照） -->
+    <article class="essay-result" id="essayResult" hidden>
+      <!-- 原文与批注（左右对照） -->
+      <section class="correction-grid">
+        <div class="essay-column" id="essayColumn">
+          <div class="column-header">📝 原文标注</div>
+          <div class="essay-text" id="essayText"></div>
+        </div>
+        <div class="comment-column" id="commentColumn">
+          <div class="column-header">💬 批注建议</div>
+          <div class="comment-list" id="commentList"></div>
+        </div>
+      </section>
+
+      <!-- 总评 -->
+      <section class="overall-section">
+        <div class="overall-header">
+          <div class="overall-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          </div>
+          <h3 class="overall-title">总评</h3>
+          <button class="overall-help" id="overallHelp" title="老师鼓励你继续加油哦～" aria-label="鼓励">
+            <span class="pulse-dot"></span>
+            鼓励
+          </button>
+        </div>
+        <div class="overall-content" id="overallContent"></div>
+
+        <!-- 评分卡 -->
+        <div class="score-cards" id="scoreCards">
+          <div class="score-card">
+            <div class="score-value" id="scoreGrammar">--</div>
+            <div class="score-label">语法</div>
+          </div>
+          <div class="score-card">
+            <div class="score-value" id="scoreVocab">--</div>
+            <div class="score-label">词汇</div>
+          </div>
+          <div class="score-card">
+            <div class="score-value" id="scoreLogic">--</div>
+            <div class="score-label">逻辑</div>
+          </div>
+          <div class="score-card score-card-main">
+            <div class="score-value" id="scoreTotal">--</div>
+            <div class="score-label">总分</div>
+          </div>
+        </div>
+      </section>
+    </article>
+
+    <!-- 错误提示 -->
+    <div class="toast" id="toast" hidden>
+      <span class="toast-icon" id="toastIcon"></span>
+      <span class="toast-msg" id="toastMsg"></span>
+    </div>
+  </main>
+
+  <!-- 底部操作栏 -->
+  <footer class="app-footer" id="appFooter" hidden>
+    <button class="footer-btn footer-btn-ghost" id="viewToggleBtn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      切换图片视图
+    </button>
+    <button class="footer-btn footer-btn-warning" id="exportBtn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      导出
+    </button>
+    <button class="footer-btn footer-btn-success" id="shareBtn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      分享
+    </button>
+  </footer>
+
+  <!-- 浮动操作按钮（FAB） -->
+  <button class="fab" id="fabBtn" title="新建批改" aria-label="新建批改">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- 设置抽屉 -->
+  <div class="drawer" id="settingsDrawer" hidden>
+    <div class="drawer-mask" data-close-drawer></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h2>设置</h2>
+        <button class="drawer-close" data-close-drawer aria-label="关闭">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="drawer-body">
+        <div class="form-group">
+          <label class="form-label">AI 服务商</label>
+          <select class="form-input" id="providerSelect">
+            <option value="gemini">Google Gemini（免费额度）</option>
+            <option value="deepseek">DeepSeek 深度求索</option>
+            <option value="qwen">通义千问（阿里云）</option>
+            <option value="moonshot">Moonshot 月之暗面（Kimi）</option>
+            <option value="chatglm">ChatGLM 智谱清言</option>
+            <option value="yi">零一万物 Yi</option>
+            <option value="baichuan">百川智能</option>
+            <option value="minimax">MiniMax 海螺 AI</option>
+            <option value="siliconflow">硅基流动 SiliconFlow</option>
+            <option value="openai">OpenAI</option>
+            <option value="custom">自定义（OpenAI 兼容协议）</option>
+          </select>
+        </div>
+        <div class="form-group" id="apiKeyGroup">
+          <label class="form-label">API Key <span class="form-tip">保存在本地浏览器，不会上传</span></label>
+          <input type="password" class="form-input" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
+          <div class="provider-hint" id="providerHint">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="provider-link">获取 Gemini API Key →</a>
+          </div>
+        </div>
+        <div class="form-group" id="baseUrlGroup" hidden>
+          <label class="form-label">API Base URL</label>
+          <input type="text" class="form-input" id="baseUrlInput" placeholder="https://api.example.com/v1" autocomplete="off">
+        </div>
+        <div class="form-group" id="modelGroup" hidden>
+          <label class="form-label">模型名</label>
+          <input type="text" class="form-input" id="modelInput" placeholder="例如 deepseek-chat" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">批改风格</label>
+          <select class="form-input" id="styleSelect">
+            <option value="standard">标准（详细）</option>
+            <option value="concise">简洁（重点突出）</option>
+            <option value="encouraging">鼓励式（适合初学者）</option>
+            <option value="advanced">进阶（高级表达建议）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">自定义评分标准 <span class="form-tip">AI 将按此标准批改和评分</span></label>
+          <textarea class="form-input rubric-input" id="rubricInput" rows="6" placeholder="在此输入你的评分标准，例如：&#10;&#10;语法（30分）：句子结构正确，无语法错误&#10;词汇（25分）：用词准确丰富，避免重复&#10;逻辑（25分）：段落连贯，论证有力&#10;格式（20分）：字数≥120，段落分明&#10;&#10;或上传一个评分标准文件 ↓"></textarea>
+          <div class="rubric-upload-row">
+            <label class="rubric-upload-btn" id="rubricUploadBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              上传文件（图片/txt/doc）
+              <input type="file" id="rubricFileInput" accept=".txt,.md,.csv,.doc,.docx,image/png,image/jpeg,image/webp,image/bmp" hidden>
+            </label>
+            <span class="rubric-file-name" id="rubricFileName"></span>
+            <button class="btn btn-text rubric-clear-btn" id="rubricClearBtn" hidden>清除</button>
+          </div>
+          <div class="rubric-templates" id="rubricTemplates">
+            <span class="rubric-template-label">快速填入模板：</span>
+            <button class="rubric-template-btn" data-template="middle-school">中学作文</button>
+            <button class="rubric-template-btn" data-template="high-school">高中作文</button>
+            <button class="rubric-template-btn" data-template="college">大学英语</button>
+            <button class="rubric-template-btn" data-template="ket">KET</button>
+            <button class="rubric-template-btn" data-template="pet">PET</button>
+            <button class="rubric-template-btn" data-template="fce">FCE</button>
+            <button class="rubric-template-btn" data-template="toefl-junior">TOEFL Junior</button>
+            <button class="rubric-template-btn" data-template="ielts">雅思写作</button>
+            <button class="rubric-template-btn" data-template="toefl">托福写作</button>
+          </div>
+        </div>
+        <div class="form-info">
+          <p>💡 推荐 DeepSeek（性价比极高）或 Gemini（免费额度），批改效果好且成本低。</p>
+          <p>📷 OCR 识别完全在浏览器中完成，无需联网。</p>
+          <p>🔑 选择预设服务商后，Base URL 和模型名会自动填好，只需输入 API Key。</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-text" id="testApiBtn">测试连接</button>
+          <button class="btn btn-primary" id="saveSettingsBtn">保存设置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帮助弹窗 -->
+  <div class="modal" id="helpModal" hidden>
+    <div class="modal-mask" data-close-modal></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>使用说明</h2>
+        <button class="modal-close" data-close-modal aria-label="关闭">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h3>1. 准备 API Key</h3>
+        <p>首次使用需要配置大模型 API Key（保存在你的浏览器本地，不会上传到任何服务器）。</p>
+        <h3>2. 选择输入方式</h3>
+        <p>支持拍照 / 上传图片 / 直接输入英文文本。图片会先在浏览器中 OCR 识别为文字。</p>
+        <h3>3. 等待 AI 批改</h3>
+        <p>大约 5-15 秒。批改完成后会在原文上用红圈标出错误位置，右侧显示中文批注。</p>
+        <h3>4. 导出或分享</h3>
+        <p>支持导出为图片，或者复制链接分享给老师同学。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第三方库（CDN） -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- 业务脚本 -->
+  <script src="js/storage.js"></script>
+  <script src="js/sample-data.js"></script>
+  <script src="js/ocr.js"></script>
+  <script src="js/ai-grader.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

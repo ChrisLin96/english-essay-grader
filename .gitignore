@@ -1,0 +1,17 @@
+# 项目数据
+.workbuddy/
+
+# 依赖
+node_modules/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# 临时文件
+*.tmp
