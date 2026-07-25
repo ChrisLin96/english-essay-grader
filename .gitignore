@@ -15,3 +15,6 @@ Thumbs.db
 
 # 临时文件
 *.tmp
+
+# 生成的图片资源（非源码，体积大）
+generated-images/
