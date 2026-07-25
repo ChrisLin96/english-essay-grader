@@ -1812,6 +1812,7 @@ body.annotation-editing .comment-add-bar {
   .modal-panel {
     max-width: 100%;
     max-height: 90vh;
+    border-radius: var(--r-md) var(--r-md) 0 0;
   }
   .modal {
     align-items: flex-end;
