@@ -39,31 +39,57 @@ Coherence（20分）：论证连贯，逻辑严密，观点前后一致
 重点：托福写作强调逻辑清晰和例证充分，语言流畅度`,
     'ket': `剑桥 KET（Key English Test）写作评分标准：
 
-Content（30分）：内容完整，回应题目所有要求，信息传达清晰
-Communicative Achievement（30分）：沟通效果，读者能理解写作意图，语言功能使用恰当
-Organization（20分）：组织结构，段落分明，衔接手段基本正确，逻辑连贯
-Language（20分）：语言质量，基础语法基本正确（简单句为主），常用词汇使用恰当，拼写标点基本无误
+Content（5分）：是否紧扣题目，表达是否清晰，信息是否完整
+Organization（5分）：文章的组织是否合理，段落划分是否清晰，逻辑是否连贯
+Language（5分）：语法的准确性、词汇的丰富度以及句子结构的多样性
 
-字数要求：25-35词（Part 7短消息）或35-45词（Part 8故事续写）
+总分：15分（三个维度各5分）
 重点：KET 注重基本沟通能力，不要求复杂句式和高级词汇，简单句表达清楚即可`,
     'pet': `剑桥 PET（B1 Preliminary）写作评分标准：
 
-Content（25分）：内容完整充分，回应题目所有要点，观点明确有细节支撑
-Communicative Achievement（25分）：沟通效果，表达清晰有条理，读者容易理解，语言功能使用得当（如建议、描述、观点表达）
-Organization（25分）：组织结构，段落结构合理，衔接手段使用恰当（however, although等），逻辑连贯流畅
-Language（25分）：语言质量，语法基本正确（允许少量错误不影响理解），词汇丰富度提升，句式有变化（简单句+并列句+少量复合句），拼写标点基本正确
+Content（5分）：评估考生是否完成任务，是否涵盖所有写作要点。内容的完整性直接影响得分，字数不足可能导致信息遗漏，字数过多则可能包含无关内容
+Communicative Achievement（5分）：关注写作的语气和文体是否恰当。考生需要根据题目要求选择合适的表达方式，确保信息传达清晰且符合情境要求
+Organization（5分）：考查文章的结构是否清晰，逻辑是否连贯。良好的组织能够帮助读者更好地理解文章内容，字数过多或过少都可能影响文章的连贯性
+Language（5分）：评估词汇和语法的准确性。考生需要展示一定的词汇量和语法知识，避免简单句的堆砌和重复错误的出现
 
-字数要求：100词左右
+总分：20分（四个维度各5分）
 重点：PET 要求能写出连贯的短文，有观点和论据，句式开始多样化`,
     'fce': `剑桥 FCE（B2 First）写作评分标准：
 
-Content（25分）：内容全面深入，完全回应题目要求，观点有深度有细节，论证有力
-Communicative Achievement（25分）：沟通效果，表达流畅自然，风格得体（正式/非正式随文体变化），读者阅读体验良好
-Organization（25分）：组织结构，段落分明逻辑严密，衔接手段丰富多样（however, nevertheless, in addition等），开头结尾有吸引力
-Language（25分）：语言质量，语法准确度高（时态、语态、虚拟语气等），词汇丰富地道（有高级词汇和搭配），句式多样复杂（定语从句、状语从句、非谓语动词等）
+Content（5分）：评估作文是否有效回应题目要求，内容是否完整且相关。
+  5分：全部内容与题目要求相关，目标读者完全理解
+  4分：大部分内容相关，少量无关信息
+  3分：存在一些无关信息，基本能被理解
+  2分：内容缺失较多，理解困难
+  1分：内容与题目要求完全无关，难以理解
+  0分：无内容或完全不相关
 
-字数要求：140-190词
-重点：FCE 要求学术型写作能力，句式多样、词汇丰富、论证深入，是英语进阶的重要里程碑`,
+Communicative Achievement（5分）：评估写作风格是否合适、得体，是否能有效传达意图。
+  5分：用得体、有效的方式吸引读者，清晰传达复杂思想
+  4分：有效吸引读者，清晰传达意图
+  3分：基本能吸引读者，传达意图
+  2分：表达不够清晰，吸引力不足
+  1分：表达混乱，难以理解
+  0分：无交流效果
+
+Organization（5分）：评估作文的结构是否清晰、逻辑是否连贯。
+  5分：组织良好，连接手段丰富，整体效果佳
+  4分：组织较好，逻辑清晰
+  3分：基本组织，逻辑有时不清晰
+  2分：组织较差，逻辑混乱
+  1分：无组织，难以理解
+  0分：完全无组织
+
+Language（5分）：评估词汇和语法的准确性和丰富性。
+  5分：词汇丰富，语法准确，表达流畅
+  4分：词汇和语法基本准确，表达清晰
+  3分：存��一些错误，但不影响理解
+  2分：错误较多，影响理解
+  1分：错误频繁，难以理解
+  0分：完全无法理解
+
+总分：20分（四个维度各5分）
+重点：FCE 要求学术型写作能力，句式多样、词汇丰富、论证深入`,
     'toefl-junior': `TOEFL Junior（初中级托福）写作评分标准：
 
 Quality of Ideas（30分）：观点质量，观点清晰合理，有具体细节和例证支撑，内容与题目相关
@@ -93,7 +119,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
    * 处理评分标准文件上传
    */
   async function handleRubricFile(file) {
-    // 图片文件放宽到 5MB，文本文件仍限制 1MB
     const isImage = file.type.startsWith('image/');
     const maxSize = isImage ? 5 * 1024 * 1024 : 1 * 1024 * 1024;
     if (file.size > maxSize) {
@@ -105,18 +130,19 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       let text = '';
 
       if (isImage) {
-        // 图片文件：OCR 识别
         $('rubricFileName').textContent = file.name + '（识别中...）';
         updateRubricState();
         toast('正在识别图片中的文字...', 'info', 5000);
         try {
-          const compressed = await OCR.compressImage(file, 1200, 0.8);
-          text = await OCR.recognize(compressed, (m) => {
-            if (m.status === 'recognizing text') {
-              const pct = Math.round((m.progress || 0) * 100);
-              $('rubricFileName').textContent = file.name + `（识别中 ${pct}%）`;
-            }
+          const res = await ocrImageToText(file, (msg) => {
+            $('rubricFileName').textContent = file.name + `（${msg}）`;
           });
+          text = res.text;
+          if (res.engine === 'tesseract' && res.aiError) {
+            toast('AI 识别失败（' + res.aiError + '），已用本地识别（准确率较低）', 'warning', 9000);
+          } else if (res.engine === 'tesseract') {
+            toast('AI 未触发，已用本地识别（准确率较低，请确认已填 API Key）', 'warning', 6000);
+          }
         } catch (ocrErr) {
           console.error('OCR error:', ocrErr);
           toast('图片识别失败：' + ocrErr.message + '，可改用文本手动输入', 'error', 5000);
@@ -124,22 +150,18 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
           return;
         }
       } else if (file.name.endsWith('.txt') || file.name.endsWith('.md')) {
-        // txt/md 文件直接读取
         text = await readFileAsText(file);
       } else if (file.name.endsWith('.csv')) {
-        // CSV 文件直接读取
         text = await readFileAsText(file);
       } else if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
-        // doc/docx - 尝试读取纯文本（简化处理）
         toast('Word 文件请先另存为 txt 格式', 'warning');
         return;
       } else {
-        // 其他文件尝试当文本读取
         text = await readFileAsText(file);
       }
 
       if (!text.trim()) {
-        toast(isImage ? '图片中未识别到文字，请确认图片清晰' : '文件内容为空', 'warning');
+        toast(isImage ? '图片中未识别到文字，请确认图片清晰' + (res.aiError ? '（AI 报错：' + res.aiError + '）' : '') : '文件内容为空', 'warning', 9000);
         $('rubricFileName').textContent = '';
         return;
       }
@@ -167,10 +189,11 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   // 状态
   // ===========================
   const state = {
-    currentEssay: null,        // 当前批改数据
-    pendingImage: null,        // 待识别图片
-    pendingText: '',           // 用户输入/OCR 后的文本
-    isProcessing: false,       // 是否正在批改
+    currentEssay: null,
+    pendingImage: null,
+    pendingText: '',
+    isProcessing: false,
+    annotationEditing: false,
   };
 
   // ===========================
@@ -182,6 +205,9 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     backBtn: $('backBtn'),
     settingsBtn: $('settingsBtn'),
     emptyState: $('emptyState'),
+    homeLayout: $('homeLayout'),
+    historyList: $('historyList'),
+    historyEmpty: $('historyEmpty'),
     emptyStartBtn: $('emptyStartBtn'),
     emptyTypeBtn: $('emptyTypeBtn'),
     emptyDemoBtn: $('emptyDemoBtn'),
@@ -196,16 +222,13 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     settingsDrawer: $('settingsDrawer'),
     providerSelect: $('providerSelect'),
     apiKeyInput: $('apiKeyInput'),
-    baseUrlInput: $('baseUrlInput'),
-    baseUrlGroup: $('baseUrlGroup'),
-    modelGroup: $('modelGroup'),
-    modelInput: $('modelInput'),
     styleSelect: $('styleSelect'),
     testApiBtn: $('testApiBtn'),
     saveSettingsBtn: $('saveSettingsBtn'),
-    viewToggleBtn: $('viewToggleBtn'),
-    exportBtn: $('exportBtn'),
     shareBtn: $('shareBtn'),
+    annotationEditBtn: $('annotationEditBtn'),
+    commentAddBar: $('commentAddBar'),
+    addAnnotationBtn: $('addAnnotationBtn'),
     overallHelp: $('overallHelp'),
     helpModal: $('helpModal'),
   };
@@ -233,11 +256,12 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   // 视图切换
   // ===========================
   function showState(name) {
-    els.emptyState.hidden = name !== 'empty';
+    els.homeLayout.hidden = name !== 'empty';
     els.essayResult.hidden = name !== 'result';
     els.loadingState.hidden = name !== 'loading';
     els.appFooter.hidden = name !== 'result';
     els.fab.hidden = name !== 'result';
+    if (name === 'empty') renderHistoryPanel();
   }
 
   // ===========================
@@ -250,6 +274,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       corrections: SampleData.corrections,
       overall: SampleData.overall,
       scores: SampleData.scores,
+      maxScores: { _default: 100 },
     };
     state.currentEssay = data;
     Storage.Current.set(data);
@@ -263,9 +288,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   function openSettings() {
     const settings = Storage.Settings.get();
     els.providerSelect.value = settings.provider;
-    els.apiKeyInput.value = settings.apiKey;
-    els.baseUrlInput.value = settings.baseUrl;
-    els.modelInput.value = settings.model;
+    els.apiKeyInput.value = settings.apiKey || '';
     els.styleSelect.value = settings.style;
     $('rubricInput').value = settings.rubric || '';
     updateProviderFields(settings.provider);
@@ -279,48 +302,30 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
 
   function updateProviderFields(provider) {
     const config = AIGrader.getProviderConfig(provider);
-    const isPreset = provider !== 'gemini' && provider !== 'custom';
-    const isCustom = provider === 'custom';
-    const isGemini = provider === 'gemini';
 
-    // 预设服务商：隐藏 baseUrl/model（自动填好）
-    // Gemini：也隐藏（走专属 API）
-    // 自定义：全部显示
-    els.baseUrlGroup.hidden = !isCustom;
-    els.modelGroup.hidden = !isCustom;
-
-    // 自动填充预设值（用户之前没改过的才自动填）
-    if (isPreset && config.baseUrl) {
-      els.baseUrlInput.value = config.baseUrl;
-    }
-    if (isPreset && config.model) {
-      els.modelInput.value = config.model;
-    }
-
-    // 更新 API Key placeholder
     const keyPrefix = config.keyPrefix || 'sk-';
     els.apiKeyInput.placeholder = keyPrefix ? `${keyPrefix}...` : 'API Key...';
 
-    // 更新服务商提示（获取 Key 链接 + 备注）
     const hintEl = document.getElementById('providerHint');
     if (hintEl) {
+      let html = '';
       if (config.keyUrl) {
-        hintEl.innerHTML = `<a href="${config.keyUrl}" target="_blank" rel="noopener" class="provider-link">获取 ${config.name} API Key →</a>`;
-      } else {
-        hintEl.innerHTML = '';
+        html += `<a href="${config.keyUrl}" target="_blank" rel="noopener" class="provider-link">获取 ${config.name} API Key →</a>`;
       }
       if (config.note) {
-        hintEl.innerHTML += `<span style="display:block;margin-top:4px;font-size:12px;color:var(--text-muted);">${config.note}</span>`;
+        html += `<span style="display:block;margin-top:4px;font-size:12px;color:var(--text-muted);">${config.note}</span>`;
       }
+      hintEl.innerHTML = html;
     }
   }
+
+  // 模型选择已从设置界面移除：默认使用支持图片识别的模型（见 ai-grader.js 的 visionModel）。
+  // 批改与看图识字共用「AI 服务商」这一个选择。
 
   function saveSettings() {
     const settings = {
       provider: els.providerSelect.value,
-      apiKey: els.apiKeyInput.value.trim(),
-      baseUrl: els.baseUrlInput.value.trim(),
-      model: els.modelInput.value.trim(),
+      apiKey: (els.apiKeyInput.value || '').trim(),
       style: els.styleSelect.value,
       rubric: $('rubricInput').value.trim(),
     };
@@ -330,14 +335,13 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   }
 
   async function testApi() {
+    const userKey = (els.apiKeyInput.value || '').trim();
     const settings = {
       provider: els.providerSelect.value,
-      apiKey: els.apiKeyInput.value.trim(),
-      baseUrl: els.baseUrlInput.value.trim(),
-      model: els.modelInput.value.trim(),
+      apiKey: userKey,
     };
     if (!settings.apiKey) {
-      toast('请先填写 API Key', 'warning');
+      toast('请先在上方填写 API Key', 'warning');
       return;
     }
     toast('正在测试...', 'info', 3000);
@@ -354,7 +358,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   // 输入对话框（拍照/上传/输入）
   // ===========================
   function openInputDialog(defaultTab = 'upload') {
-    // 创建对话框 DOM
     const dialog = document.createElement('div');
     dialog.className = 'input-dialog';
     dialog.id = 'inputDialog';
@@ -365,6 +368,10 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
           <button class="drawer-close" data-action="close" aria-label="关闭">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
+        </div>
+        <div class="input-student">
+          <label class="form-label" for="studentNameInput">学生姓名（选填）</label>
+          <input type="text" class="form-input" id="studentNameInput" placeholder="例如：张三" autocomplete="off" maxlength="40">
         </div>
         <div class="input-tabs">
           <button class="input-tab ${defaultTab === 'upload' ? 'active' : ''}" data-tab="upload">📷 拍照/上传</button>
@@ -417,6 +424,8 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       </div>
     `;
     document.body.appendChild(dialog);
+    const sn = dialog.querySelector('#studentNameInput');
+    if (sn) sn.value = Storage.Student.get();
     bindInputDialog(dialog);
   }
 
@@ -425,15 +434,70 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     if (dialog) dialog.remove();
   }
 
+  // ===========================
+  // 通用轻量对话框
+  // ===========================
+  function openPromptDialog({ title = '提示', value = '', placeholder = '', maxlength = 40, onConfirm }) {
+    const mask = document.createElement('div');
+    mask.className = 'prompt-mask';
+    mask.innerHTML = `
+      <div class="prompt-card">
+        <div class="prompt-title">${Renderer.escapeHtml(title)}</div>
+        <input type="text" class="prompt-input form-input" value="${Renderer.escapeHtml(value)}" placeholder="${Renderer.escapeHtml(placeholder)}" maxlength="${maxlength}">
+        <div class="prompt-actions">
+          <button class="btn btn-secondary" data-action="cancel">取消</button>
+          <button class="btn btn-primary" data-action="ok">确定</button>
+        </div>
+      </div>`;
+    document.body.appendChild(mask);
+    const input = mask.querySelector('.prompt-input');
+    input.focus();
+    input.select();
+    const close = () => mask.remove();
+    mask.addEventListener('click', (e) => {
+      if (e.target === mask || e.target.dataset.action === 'cancel') close();
+    });
+    mask.querySelector('[data-action="ok"]').addEventListener('click', () => {
+      const v = input.value.trim();
+      close();
+      if (onConfirm) onConfirm(v);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); mask.querySelector('[data-action="ok"]').click(); }
+      else if (e.key === 'Escape') close();
+    });
+  }
+
+  function openConfirmDialog({ title = '提示', message = '', confirmText = '确定', cancelText = '取消', danger = false, onConfirm }) {
+    const mask = document.createElement('div');
+    mask.className = 'prompt-mask';
+    mask.innerHTML = `
+      <div class="prompt-card">
+        <div class="prompt-title">${Renderer.escapeHtml(title)}</div>
+        <div class="prompt-message">${Renderer.escapeHtml(message)}</div>
+        <div class="prompt-actions">
+          <button class="btn btn-secondary" data-action="cancel">${Renderer.escapeHtml(cancelText)}</button>
+          <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-action="ok">${Renderer.escapeHtml(confirmText)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(mask);
+    const close = () => mask.remove();
+    mask.addEventListener('click', (e) => {
+      if (e.target === mask || e.target.dataset.action === 'cancel') close();
+    });
+    mask.querySelector('[data-action="ok"]').addEventListener('click', () => {
+      close();
+      if (onConfirm) onConfirm();
+    });
+  }
+
   function bindInputDialog(dialog) {
-    // 关闭
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog || e.target.dataset.action === 'close') {
         closeInputDialog();
       }
     });
 
-    // Tab 切换
     dialog.querySelectorAll('.input-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const name = tab.dataset.tab;
@@ -442,7 +506,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       });
     });
 
-    // 拍照/相册切换
     dialog.querySelectorAll('.upload-action-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -457,7 +520,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       });
     });
 
-    // 文件选择
     const fileInput = $('fileInput');
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
@@ -465,7 +527,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       await handleImageSelected(file, dialog);
     });
 
-    // 拖拽
     const zone = $('uploadZone');
     ;['dragover', 'dragenter'].forEach(evt => {
       zone.addEventListener(evt, (e) => {
@@ -487,7 +548,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       }
     });
 
-    // 文本输入统计
     const textInput = $('textInput');
     const wordCountEl = $('inputWordCount');
     textInput.addEventListener('input', () => {
@@ -495,14 +555,12 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       wordCountEl.textContent = `${count} 词`;
     });
 
-    // 清空文本
     $('clearTextBtn').addEventListener('click', () => {
       textInput.value = '';
       wordCountEl.textContent = '0 词';
       textInput.focus();
     });
 
-    // 提交批改
     $('submitGradeBtn').addEventListener('click', async () => {
       await submitGrade(dialog);
     });
@@ -514,35 +572,31 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       return;
     }
 
-    // 压缩图片
     showOcrProgress(dialog, '正在准备图片...');
-    const compressed = await OCR.compressImage(file);
-
-    // OCR 识别
-    showOcrProgress(dialog, '正在识别英文... 0%');
     try {
-      const text = await OCR.recognize(compressed, (m) => {
-        if (m.status === 'recognizing text') {
-          const pct = Math.round((m.progress || 0) * 100);
-          showOcrProgress(dialog, `正在识别英文... ${pct}%`);
-        } else if (m.status) {
-          showOcrProgress(dialog, `${m.status}...`);
-        }
-      });
+      const res = await ocrImageToText(file, (msg) => showOcrProgress(dialog, msg));
+      const text = res.text;
 
       hideOcrProgress(dialog);
 
       if (!text.trim()) {
-        toast('识别结果为空，请检查图片', 'warning');
+        toast('识别结果为空，请检查图片' + (res.aiError ? '（AI 报错：' + res.aiError + '）' : '') + '，可改用文本手动输入', 'warning', 9000);
         return;
       }
 
-      // 把识别结果填到文本输入框，并切换到文本 Tab 供用户编辑
+      if (res.engine === 'ai') {
+        toast('✅ 已用 AI 视觉识别', 'success', 6000);
+      } else if (res.engine === 'tesseract' && res.aiError) {
+        toast('⚠️ AI 看图失败（' + res.aiError + '），已回退本地 OCR（准确率较低）', 'error', 10000);
+      } else if (res.engine === 'tesseract') {
+        toast('⚠️ AI 未触发，已用本地 OCR（准确率较低，请确认已填 Key）', 'warning', 6000);
+      }
+
       dialog.querySelector('.input-tab[data-tab="text"]').click();
       const textInput = $('textInput');
       textInput.value = text;
       textInput.dispatchEvent(new Event('input'));
-      toast(`识别完成，共 ${Renderer.countWords(text)} 词`, 'success');
+      toast(`识别完成（${res.engine === 'ai' ? 'AI' : '本地'}识别），共 ${Renderer.countWords(text)} 词`, 'success');
     } catch (e) {
       hideOcrProgress(dialog);
       toast(e.message, 'error', 4000);
@@ -560,6 +614,54 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     if (el) el.hidden = true;
   }
 
+  async function ocrImageToText(file, onProgress) {
+    const compressed = await OCR.compressImage(file, 1600, 0.85);
+    const dataUrl = await OCR.fileToDataURL(compressed);
+    const settings = Storage.Settings.get();
+
+    const visionSettings = {
+      provider: settings.provider,
+      apiKey: (settings.apiKey || '').trim(),
+    };
+    let aiError = null;
+
+    const runTesseract = async (note) => {
+      onProgress && onProgress(note || '改用本地识别...');
+      const t = await OCR.recognize(compressed, (m) => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round((m.progress || 0) * 100);
+          onProgress && onProgress(`正在识别英文... ${pct}%`);
+        } else if (m.status) {
+          onProgress && onProgress(`${m.status}...`);
+        }
+      });
+      return t.trim();
+    };
+
+    if (visionSettings.apiKey) {
+      try {
+        onProgress && onProgress('正在用 AI 识别图片文字...');
+        const aiText = await AIGrader.recognizeImage(dataUrl, visionSettings);
+        if (aiText && aiText.trim()) {
+          return { text: aiText.trim(), engine: 'ai' };
+        }
+        aiError = 'AI 返回了空内容';
+      } catch (e) {
+        console.warn('AI 看图识字失败，回退本地 OCR：', e.message);
+        aiError = e.message;
+      }
+    } else {
+      toast('未填写 API Key，已改用本地识别（准确率较低）。', 'warning', 7000);
+    }
+
+    try {
+      const text = await runTesseract(aiError ? 'AI 识别失败，改用本地识别...' : undefined);
+      return { text, engine: 'tesseract', aiError };
+    } catch (e) {
+      return { text: '', engine: 'tesseract', aiError: aiError || e.message };
+    }
+  }
+
   async function submitGrade(dialog) {
     const activePane = dialog.querySelector('.tab-pane.active');
     let text = '';
@@ -567,7 +669,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     if (activePane.dataset.pane === 'text') {
       text = $('textInput').value.trim();
     } else {
-      // 上传模式但还没 OCR
       text = state.pendingText || '';
     }
 
@@ -581,22 +682,47 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       return;
     }
 
+    const studentName = (dialog.querySelector('#studentNameInput')?.value || '').trim();
+    Storage.Student.set(studentName);
+
     const settings = Storage.Settings.get();
     if (!settings.apiKey) {
-      toast('请先在设置中配置 API Key', 'warning', 3000);
+      toast('请先在设置中填写 API Key', 'warning', 3000);
       closeInputDialog();
       setTimeout(openSettings, 200);
       return;
     }
 
     closeInputDialog();
-    await startGrading(text, settings);
+    await startGrading(text, settings, studentName);
   }
 
-  // ===========================
-  // 批改流程
-  // ===========================
-  async function startGrading(text, settings) {
+  function parseMaxScores(rubric) {
+    if (!rubric || !rubric.trim()) return null;
+    const maxScores = {};
+    const re = /([^\n（(]+)[（(](\d+)\s*分[）)]/g;
+    let m;
+    while ((m = re.exec(rubric)) !== null) {
+      const name = m[1].trim().toLowerCase();
+      const max = parseInt(m[2], 10);
+      const keyMap = {
+        '语法': 'grammar', '词汇': 'vocabulary', '逻辑': 'logic', '总分': 'total',
+        '格式': 'format', '表达': 'expression', '连贯': 'coherence', '衔接': 'cohesion',
+        '创新': 'innovation',
+        'content': 'content',
+        'communicative achievement': 'communicativeAchievement',
+        'organization': 'organization', 'language': 'language',
+        'task achievement': 'taskAchievement', 'coherence & cohesion': 'coherence',
+        'lexical resource': 'lexicalResource', 'grammatical range': 'grammaticalRange',
+        'development': 'development', 'language use': 'languageUse',
+        'quality of ideas': 'qualityOfIdeas', 'quality of language': 'qualityOfLanguage',
+      };
+      const key = keyMap[name] || name.replace(/\s+/g, '_');
+      maxScores[key] = max;
+    }
+    return Object.keys(maxScores).length > 0 ? maxScores : null;
+  }
+  async function startGrading(text, settings, studentName) {
     state.isProcessing = true;
     state.pendingText = text;
     showState('loading');
@@ -617,8 +743,9 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       const result = await AIGrader.grade(text, settings);
       clearInterval(msgTimer);
 
-      // 自动定位错误位置
       const corrections = locateCorrections(text, result.corrections);
+
+      const maxScores = parseMaxScores(settings.rubric) || { _default: 100 };
 
       const data = {
         title: extractTitle(text) || '我的英语作文',
@@ -626,6 +753,8 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         corrections,
         overall: result.overall,
         scores: result.scores,
+        maxScores,
+        studentName: studentName || '',
       };
 
       state.currentEssay = data;
@@ -636,6 +765,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         corrections: data.corrections,
         overall: data.overall,
         scores: data.scores,
+        studentName: data.studentName,
       });
 
       Renderer.render(data);
@@ -651,22 +781,17 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
   }
 
-  /**
-   * 在文本中定位 AI 返回的每个错误的字符位置
-   */
   function locateCorrections(text, corrections) {
     if (!corrections || !corrections.length) return [];
 
-    // 先尝试用 original 字段匹配
     const located = [];
-    const used = new Set(); // 记录已使用的位置
+    const used = new Set();
 
     corrections.forEach(c => {
       if (!c.original) {
         located.push({ ...c, start: 0, end: 0 });
         return;
       }
-      // 找所有出现位置，跳过已用过的
       let idx = -1;
       let searchFrom = 0;
       while (true) {
@@ -684,7 +809,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       if (idx >= 0) {
         located.push({ ...c, start: idx, end: idx + c.original.length });
       } else {
-        // 模糊匹配：忽略大小写和首尾空格
         const norm = (s) => s.toLowerCase().replace(/\s+/g, ' ').trim();
         const normTarget = norm(c.original);
         let pos = 0;
@@ -692,7 +816,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         while (pos < text.length) {
           const slice = text.slice(pos, pos + c.original.length + 5);
           if (norm(slice).startsWith(normTarget.slice(0, 20))) {
-            // 简化版：找原文足够长的前缀
             const slice2 = text.slice(pos, pos + c.original.length);
             if (norm(slice2) === normTarget) {
               const rangeKey = `${pos}-${pos + c.original.length}`;
@@ -716,9 +839,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     return located;
   }
 
-  /**
-   * 从作文内容中提取标题（第一行或第一句）
-   */
   function extractTitle(text) {
     const firstLine = text.split('\n').find(l => l.trim());
     if (!firstLine) return null;
@@ -728,34 +848,189 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   }
 
   // ===========================
-  // 导出
+  // 老师自定义批注（编辑模式）
   // ===========================
-  async function doExport() {
-    if (!state.currentEssay) {
-      toast('没有可导出的内容', 'warning');
-      return;
+  function toggleAnnotationEditing() {
+    state.annotationEditing = !state.annotationEditing;
+    document.body.classList.toggle('annotation-editing', state.annotationEditing);
+    els.annotationEditBtn.classList.toggle('active', state.annotationEditing);
+    els.annotationEditBtn.textContent = state.annotationEditing ? '✓ 完成' : '✎ 编辑';
+      if (!state.annotationEditing) {
+        syncContentFromDOM();
+        persistEdits();
+        toast('批注已保存', 'success', 1500);
+      }
+      applyEditMode();
     }
-    try {
-      toast('正在生成图片...', 'info', 2000);
-      const blob = await Exporter.exportToImage($('essayResult'));
-      Exporter.download(blob);
-      toast('已下载到本地', 'success');
-    } catch (e) {
-      console.error(e);
-      toast('导出失败：' + e.message, 'error');
-    }
+
+  function applyEditMode() {
+    document.querySelectorAll('#commentList .comment-content, #commentList .suggest-text').forEach(el => {
+      el.setAttribute('contenteditable', state.annotationEditing ? 'true' : 'false');
+    });
+  }
+
+  function syncContentFromDOM() {
+    if (!state.currentEssay) return;
+    document.querySelectorAll('#commentList .comment-content').forEach(el => {
+      const cid = Number(el.dataset.cid);
+      const c = (state.currentEssay.corrections || []).find(x => x.id === cid);
+      if (c) c.comment = el.innerText.replace(/\n+$/, '');
+    });
+    document.querySelectorAll('#commentList .suggest-text').forEach(el => {
+      const cid = Number(el.dataset.cid);
+      const c = (state.currentEssay.corrections || []).find(x => x.id === cid);
+      if (c) c.corrected = el.innerText.replace(/\n+$/, '').trim();
+    });
+  }
+
+  function bindCommentEditing() {
+    const list = document.getElementById('commentList');
+    if (!list) return;
+
+    list.addEventListener('input', (e) => {
+      const content = e.target.closest('.comment-content');
+      const suggest = e.target.closest('.suggest-text');
+      if (content) {
+        const cid = Number(content.dataset.cid);
+        const c = (state.currentEssay.corrections || []).find(x => x.id === cid);
+        if (c) {
+          c.comment = content.innerText.replace(/\n+$/, '');
+          persistEdits();
+        }
+      } else if (suggest) {
+        const cid = Number(suggest.dataset.cid);
+        const c = (state.currentEssay.corrections || []).find(x => x.id === cid);
+        if (c) {
+          c.corrected = suggest.innerText.replace(/\n+$/, '').trim();
+          persistEdits();
+        }
+      }
+    });
+
+    list.addEventListener('change', (e) => {
+      const sel = e.target.closest('.comment-type');
+      if (!sel) return;
+      const cid = Number(sel.dataset.cid);
+      const c = (state.currentEssay.corrections || []).find(x => x.id === cid);
+      if (!c) return;
+      const cat = Renderer.getCategories().find(t => t.key === sel.value);
+      if (cat) c.type = cat.label;
+      persistEdits();
+      Renderer.render(state.currentEssay);
+      applyEditMode();
+    });
+
+    list.addEventListener('click', (e) => {
+      const del = e.target.closest('.comment-del');
+      if (!del) return;
+      e.stopPropagation();
+      const cid = Number(del.dataset.cid);
+      state.currentEssay.corrections = (state.currentEssay.corrections || []).filter(x => x.id !== cid);
+      persistEdits();
+      Renderer.render(state.currentEssay);
+      applyEditMode();
+    });
+  }
+
+  function addAnnotation(original) {
+    const cats = Renderer.getCategories();
+    const bar = els.commentAddBar;
+    const originalHint = original
+      ? `<div class="add-original">📍 标记原文：<b>${Renderer.escapeHtml(original)}</b></div>`
+      : '';
+    bar.innerHTML = `
+      <div class="add-form">
+        ${originalHint}
+        <select class="add-type" title="选择批注类型 / 颜色">
+          ${cats.map(t => `<option value="${t.key}">${t.label}</option>`).join('')}
+        </select>
+        <textarea class="add-text" rows="3" placeholder="输入老师自定义的批注内容..."></textarea>
+        <div class="add-actions">
+          <button class="btn btn-text add-cancel">取消</button>
+          <button class="btn btn-primary add-save">添加</button>
+        </div>
+      </div>`;
+    bar.querySelector('.add-cancel').addEventListener('click', resetAddBar);
+    bar.querySelector('.add-save').addEventListener('click', () => {
+      const typeSel = bar.querySelector('.add-type');
+      const textEl = bar.querySelector('.add-text');
+      const text = textEl.value.trim();
+      if (!text) { toast('请输入批注内容', 'warning'); return; }
+      const cat = cats.find(t => t.key === typeSel.value) || cats[cats.length - 1];
+      const corrections = state.currentEssay.corrections || [];
+      const newId = corrections.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
+      const corr = { id: newId, type: cat.label, comment: text, edited: true };
+      if (original) corr.original = original;
+      corrections.push(corr);
+      state.currentEssay.corrections = corrections;
+      persistEdits();
+      Renderer.render(state.currentEssay);
+      applyEditMode();
+      resetAddBar();
+    });
+    bar.querySelector('.add-text').focus();
+  }
+
+  let pendingSelectionText = '';
+  function initSelectionAnnotation() {
+    const btn = document.getElementById('selectionAddBtn');
+    if (!btn) return;
+
+    document.addEventListener('selectionchange', () => {
+      if (!state.annotationEditing) { btn.hidden = true; pendingSelectionText = ''; return; }
+      const sel = window.getSelection();
+      const text = sel ? sel.toString().trim() : '';
+      if (!sel || sel.isCollapsed || !text) { btn.hidden = true; pendingSelectionText = ''; return; }
+      const node = sel.anchorNode;
+      const el = node ? (node.nodeType === 3 ? node.parentElement : node) : null;
+      if (!el || !el.closest('.essay-text')) { btn.hidden = true; pendingSelectionText = ''; return; }
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      if (!rect || (rect.width === 0 && rect.height === 0)) { btn.hidden = true; return; }
+      pendingSelectionText = text;
+      btn.hidden = false;
+      btn.style.top = Math.max(8, rect.top - 46) + 'px';
+      btn.style.left = (rect.left + rect.width / 2) + 'px';
+    });
+
+    btn.addEventListener('mousedown', (e) => e.preventDefault());
+
+    btn.addEventListener('click', () => {
+      const txt = pendingSelectionText;
+      btn.hidden = true;
+      pendingSelectionText = '';
+      if (window.getSelection) window.getSelection().removeAllRanges();
+      if (txt) addAnnotation(txt);
+    });
+  }
+
+  function resetAddBar() {
+    els.commentAddBar.innerHTML = '<button class="comment-add-btn" id="addAnnotationBtn">+ 添加自定义批注</button>';
+    document.getElementById('addAnnotationBtn').addEventListener('click', addAnnotation);
+  }
+
+  function persistEdits() {
+    if (state.currentEssay) Storage.Current.set(state.currentEssay);
   }
 
   // ===========================
   // 分享
   // ===========================
+  function generateShareData(data) {
+    const id = Storage.History.add(data);
+    return {
+      id,
+      url: location.origin + location.pathname + '?id=' + id,
+      text: `我用 AI 批改了英语作文《${data.title || '我的作文'}》，总分 ${data.scores?.total || '--'}，查看批改结果：${location.origin + location.pathname + '?id=' + id}`,
+    };
+  }
+
   function doShare() {
     if (!state.currentEssay) {
       toast('没有可分享的内容', 'warning');
       return;
     }
 
-    const shareData = Exporter.generateShareData({
+    const shareData = generateShareData({
       title: state.currentEssay.title,
       text: state.currentEssay.text,
       corrections: state.currentEssay.corrections,
@@ -769,12 +1044,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       <div class="share-panel">
         <h3 class="share-title">分享批改结果</h3>
         <div class="share-options">
-          <div class="share-option" data-action="image">
-            <div class="share-icon image">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </div>
-            <div class="share-label">导出图片</div>
-          </div>
           <div class="share-option" data-action="copy">
             <div class="share-icon copy">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -807,10 +1076,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       const action = e.target.closest('.share-option')?.dataset.action;
       if (!action) return;
 
-      if (action === 'image') {
-        sheet.remove();
-        await doExport();
-      } else if (action === 'copy') {
+      if (action === 'copy') {
         try {
           await navigator.clipboard.writeText(shareData.url);
           toast('链接已复制', 'success');
@@ -833,6 +1099,101 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   }
 
   // ===========================
+  // 历史记录面板
+  // ===========================
+  function formatHistoryDate(ts) {
+    const d = new Date(ts);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function renderHistoryPanel() {
+    const list = els.historyList;
+    if (!list) return;
+    const records = Storage.History.list();
+    if (!records.length) {
+      list.innerHTML = '';
+      if (els.historyEmpty) els.historyEmpty.hidden = false;
+      return;
+    }
+    if (els.historyEmpty) els.historyEmpty.hidden = true;
+    list.innerHTML = records.map(r => {
+      const wc = Renderer.countWords(r.text || '');
+      const total = (r.scores && r.scores.total != null) ? r.scores.total : '--';
+      const name = r.studentName ? ` · ${Renderer.escapeHtml(r.studentName)}` : '';
+      return `
+        <div class="history-item" data-id="${r.id}">
+          <div class="history-item-main" data-action="load">
+            <div class="history-item-title">${Renderer.escapeHtml(r.title || '未命名作文')}${name}</div>
+            <div class="history-item-meta">${formatHistoryDate(r.createdAt)} · ${wc} 词 · 总分 ${total}</div>
+          </div>
+          <div class="history-item-actions">
+            <button class="history-btn" data-action="rename" data-id="${r.id}" title="重命名">✎</button>
+            <button class="history-btn history-btn-del" data-action="delete" data-id="${r.id}" title="删除">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function loadHistoryRecord(id) {
+    const record = Storage.History.get(id);
+    if (!record) {
+      toast('记录不存在或已被删除', 'warning');
+      renderHistoryPanel();
+      return;
+    }
+    state.currentEssay = record;
+    Storage.Current.set(record);
+    Renderer.render(record);
+    showState('result');
+  }
+
+  function renameHistory(id) {
+    const record = Storage.History.get(id);
+    if (!record) return;
+    openPromptDialog({
+      title: '重命名批改记录',
+      value: record.title || '',
+      placeholder: '给这条批改记录起个名字',
+      onConfirm: (newTitle) => {
+        if (!newTitle) {
+          toast('名称不能为空', 'warning');
+          return;
+        }
+        Storage.History.rename(id, newTitle);
+        renderHistoryPanel();
+        toast('已重命名', 'success', 1500);
+      },
+    });
+  }
+
+  function deleteHistory(id) {
+    openConfirmDialog({
+      title: '删除记录',
+      message: '确定删除这条历史记录吗？此操作不可撤销。',
+      confirmText: '删除',
+      danger: true,
+      onConfirm: () => {
+        Storage.History.remove(id);
+        renderHistoryPanel();
+      },
+    });
+  }
+
+  function clearHistory() {
+    openConfirmDialog({
+      title: '清空历史',
+      message: '确定清空全部历史记录吗？此操作不可撤销。',
+      confirmText: '清空',
+      danger: true,
+      onConfirm: () => {
+        Storage.History.clear();
+        renderHistoryPanel();
+      },
+    });
+  }
+
+  // ===========================
   // 鼓励气泡
   // ===========================
   function showEncouragement() {
@@ -845,7 +1206,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     ];
     const text = messages[Math.floor(Math.random() * messages.length)];
 
-    // 移除旧气泡
     document.querySelectorAll('.bubble-help').forEach(b => b.remove());
 
     const bubble = document.createElement('div');
@@ -864,10 +1224,8 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   // 事件绑定
   // ===========================
   function bindEvents() {
-    // 返回
     els.backBtn.addEventListener('click', () => {
       if (els.essayResult.hidden) {
-        // 在空状态
         return;
       }
       if (confirm('确定要返回吗？当前批改结果会保留在历史中')) {
@@ -876,7 +1234,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       }
     });
 
-    // 设置
     els.settingsBtn.addEventListener('click', openSettings);
     document.querySelectorAll('[data-close-drawer]').forEach(el => {
       el.addEventListener('click', closeSettings);
@@ -887,14 +1244,12 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     els.saveSettingsBtn.addEventListener('click', saveSettings);
     els.testApiBtn.addEventListener('click', testApi);
 
-    // 评分标准：文件上传
     $('rubricFileInput').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       await handleRubricFile(file);
     });
 
-    // 评分标准：模板快速填入
     $('rubricTemplates').addEventListener('click', (e) => {
       const btn = e.target.closest('.rubric-template-btn');
       if (!btn) return;
@@ -903,7 +1258,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       if (template) {
         $('rubricInput').value = template;
         updateRubricState();
-        // 高亮当前模板按钮
         $('rubricTemplates').querySelectorAll('.rubric-template-btn').forEach(b => {
           b.classList.toggle('active', b.dataset.template === templateKey);
         });
@@ -911,7 +1265,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       }
     });
 
-    // 评分标准：清除
     $('rubricClearBtn').addEventListener('click', () => {
       $('rubricInput').value = '';
       $('rubricFileName').textContent = '';
@@ -919,28 +1272,39 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       $('rubricTemplates').querySelectorAll('.rubric-template-btn').forEach(b => b.classList.remove('active'));
     });
 
-    // 空状态按钮
     els.emptyStartBtn.addEventListener('click', () => openInputDialog('upload'));
     els.emptyTypeBtn.addEventListener('click', () => openInputDialog('text'));
     els.emptyDemoBtn.addEventListener('click', loadSample);
 
-    // FAB - 新建
     els.fab.addEventListener('click', () => openInputDialog('upload'));
 
-    // 底部操作
-    els.exportBtn.addEventListener('click', doExport);
     els.shareBtn.addEventListener('click', doShare);
-    els.viewToggleBtn.addEventListener('click', () => {
-      // 切换图片/分栏视图
-      const grid = document.querySelector('.correction-grid');
-      if (grid) grid.classList.toggle('image-view');
-      toast(grid.classList.contains('image-view') ? '已切换为图片视图' : '已切换为分栏视图', 'info', 1500);
-    });
 
-    // 鼓励
+    if (els.historyList) {
+      els.historyList.addEventListener('click', (e) => {
+        const item = e.target.closest('.history-item');
+        if (!item) return;
+        const id = item.dataset.id;
+        const btn = e.target.closest('.history-btn');
+        if (btn) {
+          e.stopPropagation();
+          const action = btn.dataset.action;
+          if (action === 'rename') renameHistory(id);
+          else if (action === 'delete') deleteHistory(id);
+          return;
+        }
+        loadHistoryRecord(id);
+      });
+    }
+    const clearBtn = $('clearHistoryBtn');
+    if (clearBtn) clearBtn.addEventListener('click', clearHistory);
+
+    els.annotationEditBtn.addEventListener('click', toggleAnnotationEditing);
+    els.addAnnotationBtn.addEventListener('click', addAnnotation);
+    bindCommentEditing();
+
     els.overallHelp.addEventListener('click', showEncouragement);
 
-    // 帮助弹窗
     document.querySelectorAll('[data-close-modal]').forEach(el => {
       el.addEventListener('click', () => {
         if (els.helpModal) els.helpModal.hidden = true;
@@ -949,12 +1313,82 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   }
 
   // ===========================
+  // 可拖动分隔条
+  // ===========================
+  function initSplitter() {
+    const grid = document.getElementById('correctionGrid');
+    const splitter = document.getElementById('gridSplitter');
+    if (!grid || !splitter) return;
+
+    const KEY = 'eg_layout_colLeft';
+    const MIN = 20;
+    const MAX = 80;
+    const FALLBACK = 55;
+
+    const currentPct = () => {
+      const v = parseFloat(getComputedStyle(grid).getPropertyValue('--col-left'));
+      return isNaN(v) ? FALLBACK : v;
+    };
+
+    const saved = parseFloat(localStorage.getItem(KEY));
+    if (!isNaN(saved)) grid.style.setProperty('--col-left', saved + '%');
+
+    let dragging = false;
+    let startX = 0;
+    let startPct = FALLBACK;
+    let gridW = 1;
+
+    splitter.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      startX = e.clientX;
+      gridW = grid.getBoundingClientRect().width || 1;
+      startPct = currentPct();
+      splitter.setPointerCapture(e.pointerId);
+      splitter.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    splitter.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      let pct = startPct + (dx / gridW) * 100;
+      pct = Math.max(MIN, Math.min(MAX, pct));
+      grid.style.setProperty('--col-left', pct + '%');
+    });
+
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      splitter.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      localStorage.setItem(KEY, currentPct().toFixed(2));
+    };
+    splitter.addEventListener('pointerup', endDrag);
+    splitter.addEventListener('pointercancel', endDrag);
+
+    splitter.addEventListener('keydown', (e) => {
+      let pct = currentPct();
+      if (e.key === 'ArrowLeft') pct -= 2;
+      else if (e.key === 'ArrowRight') pct += 2;
+      else return;
+      pct = Math.max(MIN, Math.min(MAX, pct));
+      grid.style.setProperty('--col-left', pct + '%');
+      localStorage.setItem(KEY, pct.toFixed(2));
+      e.preventDefault();
+    });
+  }
+
+  // ===========================
   // 启动
   // ===========================
   function init() {
     bindEvents();
+    initSelectionAnnotation();
+    initSplitter();
 
-    // 恢复当前批改结果
     const current = Storage.Current.get();
     if (current && current.text) {
       state.currentEssay = current;
@@ -963,7 +1397,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       return;
     }
 
-    // 处理 URL 参数 ?id=xxx 加载历史
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     if (id) {
@@ -977,10 +1410,8 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       }
     }
 
-    // 默认空状态
     showState('empty');
 
-    // 首次访问显示欢迎 toast
     if (!localStorage.getItem('eg_visited')) {
       setTimeout(() => {
         toast('点击"查看示例效果"体验一下 ✨', 'info', 3500);
@@ -989,7 +1420,6 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
   }
 
-  // DOM Ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
