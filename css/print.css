@@ -1,0 +1,148 @@
+/* ===========================================================
+   打印 / 导出 PDF 专用样式
+   仅作用于 @media print，不影响屏幕显示。
+   目标：只把批改结果（得分 + 原文标注 + 批注 + 总评）
+        输出为矢量 PDF，文字清晰、可选中、不模糊。
+   =========================================================== */
+
+@page {
+  size: A4;
+  margin: 14mm 12mm;
+}
+
+@media print {
+  /* 重置页面背景，避免整页灰底 */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* 隐藏所有非结果 UI（显式 display 控制，比 visibility 技巧更可靠） */
+  .app-header,
+  #appFooter,
+  .fab,
+  .drawer,
+  #helpModal,
+  .toast,
+  .input-dialog,
+  .empty-state,
+  .loading-state,
+  .selection-add-btn,
+  .settings-drawer,
+  .home-layout,
+  .history-panel {
+    display: none !important;
+  }
+
+  /* 结果区恢复正常文档流，完整输出（不再绝对定位，避免内容被裁掉） */
+  #essayResult {
+    display: block !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* 强制保留彩色（标注下划线、编号圈、得分卡底色等） */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 隐藏结果区内部的编辑/操作控件，保证 PDF 干净 */
+  .comment-toolbar,
+  .comment-add-bar,
+  .header-edit-btn,
+  .fab,
+  .selection-add-btn {
+    display: none !important;
+  }
+
+  /* 隐藏空的「修改建议」占位（无修改建议的句子不显示占位提示） */
+  .comment-suggest.is-empty {
+    display: none !important;
+  }
+
+  /* 去掉可编辑轮廓 */
+  .comment-content {
+    outline: none !important;
+  }
+
+  /* 保持左右对称两栏布局（原文左、批注右），与屏幕一致，并支持拖动的宽度比例 */
+  .correction-grid {
+    display: flex !important;
+    align-items: stretch !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+  /* 分隔条打印时不显示，改用细边框分隔两栏 */
+  .splitter { display: none !important; }
+  .col-pane { display: flex !important; flex-direction: column !important; min-width: 0 !important; }
+  .col-pane-left { flex: 0 0 var(--col-left, 55%) !important; border-right: 1px solid #e2e8f0 !important; }
+  .col-pane-right { flex: 1 1 0 !important; }
+  .column-header {
+    background: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+  }
+  .essay-column,
+  .comment-column {
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+  .essay-column .essay-text,
+  .comment-column .comment-list {
+    padding: 8px 10px !important;
+  }
+
+  /* 总评：正常文档流输出 */
+  .overall-section {
+    break-inside: auto !important;
+  }
+
+  /* 得分卡横向排列、居中 */
+  .score-cards {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    justify-content: center;
+  }
+
+  /* 避免内容被分页切断 */
+  .score-card,
+  .comment-item,
+  .legend-bar {
+    break-inside: avoid !important;
+  }
+
+  /* 导出 PDF 的页眉：居中机构名 + 学生姓名，位于结果区顶部、带底部分隔线 */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #111827;
+    margin: 0 0 6mm !important;
+    padding-bottom: 3mm !important;
+    border-bottom: 1.5px solid #94a3b8 !important;
+  }
+  .print-student {
+    display: block !important;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 2mm;
+  }
+}

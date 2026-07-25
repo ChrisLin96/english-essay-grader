@@ -36,14 +36,21 @@ const Storage = (() => {
   // 设置
   const Settings = {
     get() {
-      return get(KEYS.SETTINGS, {
-        provider: 'gemini',
+      const stored = get(KEYS.SETTINGS, null);
+      const defaults = {
+        // 统一的服务商：AI 批改与 AI 看图识字共用同一个服务商 + Key。
+        // 默认通义千问——它的多模态模型（qwen-vl-max 等）既能批改又能看图，一个 Key 搞定。
+        // 若选纯文本服务商（如 DeepSeek），批改正常，但看图会自动回退本地 OCR 并提示。
+        provider: 'qwen',
         apiKey: '',
         baseUrl: '',
         model: '',
         style: 'standard',
         rubric: '',
-      });
+      };
+      // 与默认值浅合并，保证旧用户的本地设置也能拿到新增字段
+      if (!stored) return defaults;
+      return { ...defaults, ...stored };
     },
     save(settings) {
       return set(KEYS.SETTINGS, settings);
@@ -70,6 +77,10 @@ const Storage = (() => {
     get(id) {
       return History.list().find(r => r.id === id);
     },
+    rename(id, title) {
+      const list = History.list().map(r => r.id === id ? { ...r, title } : r);
+      set(KEYS.HISTORY, list);
+    },
     remove(id) {
       const list = History.list().filter(r => r.id !== id);
       set(KEYS.HISTORY, list);
@@ -79,6 +90,12 @@ const Storage = (() => {
     },
   };
 
+  // 学生姓名（最近一次输入的名字，方便下次自动填入）
+  const Student = {
+    get() { return get('eg_student', '') || ''; },
+    set(name) { return set('eg_student', name || ''); },
+  };
+
   // 当前批改数据
   const Current = {
     get() { return get(KEYS.CURRENT); },
@@ -86,7 +103,7 @@ const Storage = (() => {
     clear() { remove(KEYS.CURRENT); },
   };
 
-  return { Settings, History, Current };
+  return { Settings, History, Current, Student };
 })();
 
 window.Storage = Storage;

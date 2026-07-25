@@ -320,18 +320,6 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
-/* 导出图片专用样式（导出时用于清晰呈现） */
-.export-mode .essay-result {
-  background: white;
-  padding: 20px;
-  width: 720px;
-  max-width: 100%;
-}
-.export-mode .error-num { box-shadow: none; }
-.export-mode .comment-item { box-shadow: none; }
-.export-mode .fab,
-.export-mode .app-footer { display: none; }
-
 /* ===========================
    分享面板
    =========================== */
@@ -433,6 +421,7 @@
   transition: all 0.15s;
   cursor: pointer;
 }
+
 .history-item:hover {
   box-shadow: var(--shadow);
   transform: translateX(2px);
@@ -532,7 +521,7 @@
 }
 
 /* ===========================
-   导出图片优化
+   PDF 导出优化（浏览器原生打印）
    =========================== */
 @media print {
   .app-header, .app-footer, .fab { display: none; }
