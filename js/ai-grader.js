@@ -15,127 +15,149 @@ const AIGrader = (() => {
       type: 'gemini',
       baseUrl: '',
       model: 'gemini-1.5-flash',
+      visionModel: 'gemini-1.5-flash',
+      models: ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-pro', 'gemini-2.0-pro'],
       keyUrl: 'https://aistudio.google.com/app/apikey',
       keyPrefix: '',
       free: true,
-      note: '免费层：每天 1500 次请求',
+      note: '免费层：每天 1500 次请求。Gemini 全系列均支持图片识别（看图识字）。',
     },
     deepseek: {
       name: 'DeepSeek 深度求索',
       type: 'openai',
-      baseUrl: 'https://api.deepseek.com/v1',
-      model: 'deepseek-chat',
+      baseUrl: 'https://api.deepseek.com',
+      model: 'deepseek-v4-flash',
+      visionModel: 'deepseek-v4-flash',
+      models: ['deepseek-v4-flash', 'deepseek-v4-pro'],
       keyUrl: 'https://platform.deepseek.com/api_keys',
       keyPrefix: 'sk-',
       free: false,
-      note: '性价比极高，约 1 元/百万 token',
+      vision: false,
+      note: '性价比极高，文本批改能力强。但其 API 仅支持文字、不支持图片识别——「AI 看图识字」会自动回退本地 OCR。若想用 AI 看图，请在设置里把服务商换成通义千问等支持视觉的。base_url 为 https://api.deepseek.com（不带 /v1）。',
     },
     qwen: {
       name: '通义千问（阿里云）',
       type: 'openai',
       baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-      model: 'qwen-turbo',
+      model: 'qwen-vl-max',
+      visionModel: 'qwen-vl-max',
+      models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-vl-max', 'qwen2.5-vl-72b-instruct'],
       keyUrl: 'https://dashscope.console.aliyun.com/apiKey',
       keyPrefix: 'sk-',
       free: false,
-      note: '国内稳定，免费额度较多',
+      note: '国内稳定，免费额度较多。默认使用 qwen-vl-max（支持图片识别）。',
     },
     moonshot: {
       name: 'Moonshot 月之暗面（Kimi）',
       type: 'openai',
       baseUrl: 'https://api.moonshot.cn/v1',
-      model: 'moonshot-v1-8k',
+      model: 'moonshot-v1-8k-vision-preview',
+      visionModel: 'moonshot-v1-8k-vision-preview',
+      models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
       keyUrl: 'https://platform.moonshot.cn/console/api-keys',
       keyPrefix: 'sk-',
       free: false,
-      note: '长文本能力强',
+      note: '默认使用 moonshot-v1-8k-vision-preview（支持图片识别）。',
     },
     chatglm: {
       name: 'ChatGLM 智谱清言',
       type: 'openai',
       baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-      model: 'glm-4-flash',
+      model: 'glm-4v-plus',
+      visionModel: 'glm-4v-plus',
+      models: ['glm-4-flash', 'glm-4-plus', 'glm-4v-plus'],
       keyUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
       keyPrefix: '',
       free: false,
-      note: 'glm-4-flash 免费可用',
+      note: '默认使用 glm-4v-plus（支持图片识别）。',
     },
     yi: {
       name: '零一万物 Yi',
       type: 'openai',
       baseUrl: 'https://api.lingyiwanwu.com/v1',
-      model: 'yi-lightning',
+      model: 'yi-vision',
+      visionModel: 'yi-vision',
+      models: ['yi-lightning', 'yi-medium'],
       keyUrl: 'https://platform.lingyiwanwu.com/apikeys',
       keyPrefix: '',
       free: false,
-      note: 'yi-lightning 免费额度',
+      note: '默认使用 yi-vision（支持图片识别）。',
     },
     baichuan: {
       name: '百川智能',
       type: 'openai',
       baseUrl: 'https://api.baichuan-ai.com/v1',
-      model: 'Baichuan4',
+      model: 'Baichuan4-Vision',
+      visionModel: 'Baichuan4-Vision',
+      models: ['Baichuan4', 'Baichuan3-Turbo', 'Baichuan4-Turbo'],
       keyUrl: 'https://platform.baichuan-ai.com/console/apikey',
       keyPrefix: 'sk-',
       free: false,
-      note: '中文理解优秀',
+      note: '默认使用 Baichuan4-Vision（支持图片识别）。',
     },
     minimax: {
       name: 'MiniMax 海螺 AI',
       type: 'openai',
       baseUrl: 'https://api.minimax.chat/v1',
-      model: 'MiniMax-Text-01',
+      model: 'MiniMax-VL-01',
+      visionModel: 'MiniMax-VL-01',
+      models: ['MiniMax-Text-01', 'MiniMax-VL-01'],
       keyUrl: 'https://platform.minimaxi.com/user-center/api-keys',
       keyPrefix: '',
       free: false,
-      note: '语音和文本双模态',
+      note: '默认使用 MiniMax-VL-01（支持图片识别）。',
     },
     siliconflow: {
       name: '硅基流动 SiliconFlow',
       type: 'openai',
       baseUrl: 'https://api.siliconflow.cn/v1',
-      model: 'deepseek-ai/DeepSeek-V3',
+      model: 'Qwen/Qwen2.5-VL-72B-Instruct',
+      visionModel: 'Qwen/Qwen2.5-VL-72B-Instruct',
       keyUrl: 'https://cloud.siliconflow.cn/account/ak',
       keyPrefix: 'sk-',
       free: false,
-      note: '聚合多模型平台，部分免费',
+      note: '聚合多模型平台，默认使用 Qwen2.5-VL-72B-Instruct（支持图片识别）。',
     },
     openai: {
       name: 'OpenAI',
       type: 'openai',
       baseUrl: 'https://api.openai.com/v1',
       model: 'gpt-4o-mini',
+      visionModel: 'gpt-4o-mini',
+      models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'o1-mini', 'o3-mini'],
       keyUrl: 'https://platform.openai.com/api-keys',
       keyPrefix: 'sk-',
       free: false,
-      note: '效果最好但成本较高',
+      note: '效果最好但成本较高。默认使用 gpt-4o-mini（支持图片识别）。',
     },
     custom: {
       name: '自定义',
       type: 'openai',
       baseUrl: '',
-      model: '',
+      model: 'gpt-4o-mini',
+      visionModel: 'gpt-4o-mini',
       keyUrl: '',
       keyPrefix: '',
       free: false,
-      note: '填写 OpenAI 兼容协议的 Base URL',
+      note: '填写 OpenAI 兼容协议的 Base URL；默认使用 gpt-4o-mini（支持图片识别），可在 ai-grader.js 调整。',
     },
   };
 
-  /**
-   * 获取预设服务商配置
-   */
   function getProviderConfig(providerId) {
-    return PROVIDERS[providerId] || PROVIDERS.custom;
+    const base = PROVIDERS[providerId] || PROVIDERS.custom;
+    const cfg = window.APP_CONFIG || {};
+    const overrides = cfg.baseUrlOverrides || {};
+    const ov = overrides[providerId];
+    if (ov && String(ov).trim() && ov !== 'PASTE_YOUR_PROXY_URL_HERE') {
+      return { ...base, baseUrl: ov.trim().replace(/\/+$/, '') };
+    }
+    return base;
   }
 
-  /**
-   * 获取所有预设服务商列表
-   */
   function getProviders() {
     return PROVIDERS;
   }
-  // 批改风格对应的提示词
+
   const STYLE_PROMPTS = {
     standard: '请像一位严谨的英语老师一样批改，指出语法、用词、搭配、逻辑等问题，并给出中肯的改进建议。',
     concise: '请只标注最关键的 3-5 个错误，简洁明了，重点突出。',
@@ -143,30 +165,30 @@ const AIGrader = (() => {
     advanced: '请从高级表达、学术写作角度批改，提出向母语者水平提升的建议。',
   };
 
-  /**
-   * 调用 AI 批改
-   * @param {string} text - 待批改的英文文本
-   * @param {Object} settings - { provider, apiKey, baseUrl, model, style, rubric }
-   * @returns {Promise<Object>} 批改结果
-   */
+  function resolveSettings(settings) {
+    const providerConfig = getProviderConfig(settings.provider);
+    const model = (settings.model || '').trim() || providerConfig.visionModel || providerConfig.model;
+    return { ...settings, model };
+  }
+
   async function grade(text, settings) {
     if (!text || !text.trim()) {
       throw new Error('作文内容为空');
     }
-    if (!settings.apiKey) {
-      throw new Error('请先在设置中配置 API Key');
+    const resolved = resolveSettings(settings);
+    if (!resolved.apiKey) {
+      throw new Error('未配置 API Key：请先在「设置」中填写你自己的 Key');
     }
 
-    // 用预设配置补全 baseUrl 和 model
-    const providerConfig = getProviderConfig(settings.provider);
+    const providerConfig = getProviderConfig(resolved.provider);
     const mergedSettings = {
-      ...settings,
+      ...resolved,
       provider: providerConfig.type,
-      baseUrl: settings.baseUrl || providerConfig.baseUrl,
-      model: settings.model || providerConfig.model,
+      baseUrl: resolved.baseUrl || providerConfig.baseUrl,
+      model: resolved.model || providerConfig.model,
     };
 
-    const prompt = buildPrompt(text, settings.style || 'standard', settings.rubric || '');
+    const prompt = buildPrompt(text, resolved.style || 'standard', resolved.rubric || '');
     let result;
 
     if (mergedSettings.provider === 'gemini') {
@@ -178,29 +200,20 @@ const AIGrader = (() => {
     return parseResult(result, settings.rubric);
   }
 
-  /**
-   * 构造批改 prompt
-   * @param {string} text - 学生作文
-   * @param {string} style - 批改风格
-   * @param {string} rubric - 用户自定义评分标准（可选）
-   */
   function buildPrompt(text, style, rubric) {
     const stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.standard;
 
-    // 评分标准部分
     let rubricSection = '';
     let scoreFields = '';
     let scoreJson = '';
     let scoreLabels = '';
 
     if (rubric && rubric.trim()) {
-      // 有自定义评分标准时，让 AI 按用户的标准来评分
       rubricSection = `\n## 用户自定义评分标准\n\n你必须严格按照以下评分标准来批改和评分：\n\n"""${rubric.trim()}"""\n\n**重要**：评分维度和权重必须与上述标准一致。`;
       scoreFields = '评分维度和权重必须与用户评分标准一致，按标准中定义的维度评分（0-100 或标准中指定的分数范围）。';
       scoreJson = 'scores 的维度必须与用户评分标准一致，如标准定义了 4 个维度就用 4 个维度，5 个就用 5 个，维度名称用英文 key。';
       scoreLabels = '必须与用户评分标准中的维度名称完全一致';
     } else {
-      // 默认评分标准
       scoreFields = `语法（grammar）：0-100\n   - 词汇（vocabulary）：0-100\n   - 逻辑（logic）：0-100\n   - 总分（total）：0-100`;
       scoreJson = `"grammar": 85,\n    "vocabulary": 88,\n    "logic": 90,\n    "total": 87`;
       scoreLabels = '默认的语法/词汇/逻辑/总分四维评分';
@@ -218,7 +231,7 @@ ${text}
 
 ## 批改要求
 
-1. **找出所有错误和值得改进的地方**（语法、用词、搭配、句式、逻辑等），按出现顺序编号（1, 2, 3...）。
+1. **找出所有错误和值得改进的地方**（语法、用词、搭配、句式、逻辑等），按��现顺序编号（1, 2, 3...）。
 2. **对每个错误**：
    - 标注错误类型（如：语法错误、搭配错误、用词不当、句式问题、拼写错误 等）
    - 用中文写一段简短的批注（1-2 句话），既要指出问题，也要肯定亮点
@@ -257,9 +270,6 @@ ${text}
 现在请开始批改。`;
   }
 
-  /**
-   * 调用 Google Gemini API
-   */
   async function callGemini(prompt, settings) {
     const model = settings.model || 'gemini-1.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.apiKey}`;
@@ -296,9 +306,6 @@ ${text}
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
-  /**
-   * 调用 OpenAI 兼容 API
-   */
   async function callOpenAICompatible(prompt, settings) {
     const baseUrl = (settings.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '');
     const model = settings.model || 'gpt-4o-mini';
@@ -334,22 +341,129 @@ ${text}
     return data.choices?.[0]?.message?.content || '';
   }
 
-  /**
-   * 解析 AI 返回的结果
-   * 处理可能的 markdown 代码块包裹
-   * @param {string} raw - AI 返回的原始文本
-   * @param {string} rubric - 用户自定义评分标准（用于决定评分维度）
-   */
+  async function recognizeImage(dataUrl, settings) {
+    const resolved = resolveSettings(settings);
+    if (!resolved.apiKey) {
+      throw new Error('未配置 API Key：请先在「设置」中填写你自己的 Key');
+    }
+    const providerConfig = getProviderConfig(resolved.provider);
+    if (providerConfig.vision === false) {
+      throw new Error(`所选服务商「${providerConfig.name}」的 API 仅支持文字、不支持图片识别。请改用通义千问、智谱、硅基流动、Gemini 等支持视觉的服务商，或继续使用本地 OCR 兜底。`);
+    }
+    const merged = {
+      ...resolved,
+      provider: providerConfig.type,
+      providerId: resolved.provider,
+      baseUrl: resolved.baseUrl || providerConfig.baseUrl,
+      model: providerConfig.visionModel || providerConfig.model,
+    };
+    const mime = (dataUrl.match(/^data:([^;]+);base64,/) || [])[1] || 'image/jpeg';
+    const b64 = dataUrl.split(',')[1] || '';
+
+    const prompt = '请识别这张图片中的英文文本。要求：\n' +
+      '1. 逐字照抄原文，保留大小写、标点、换行与段落结构；\n' +
+      '2. 不要翻译、不要改写、不要纠正拼写或语法错误、不要添加任何解释；\n' +
+      '3. 如果是手写体，请尽力辨认每个字母，不确定的字符用「?」标注，不要臆测；\n' +
+      '4. 仅输出图片里实际出现的文字内容，不要输出任何额外说明。';
+
+    if (merged.provider === 'gemini') {
+      return await callGeminiVision(prompt, merged, mime, b64);
+    }
+    return await callOpenAICompatibleVision(prompt, merged, dataUrl);
+  }
+
+  async function callGeminiVision(prompt, settings, mime, b64) {
+    const model = settings.model || 'gemini-1.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: mime, data: b64 } },
+          ],
+        }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+        ],
+      }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const msg = err.error?.message || `HTTP ${response.status}`;
+      throw new Error('Gemini 识别失败：' + msg);
+    }
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+  }
+
+  async function callOpenAICompatibleVision(prompt, settings, dataUrl) {
+    const baseUrl = (settings.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '');
+    const model = settings.model || 'gpt-4o-mini';
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60000);
+    const body = {
+      model,
+      messages: [
+        { role: 'user', content: [
+          { type: 'text', text: prompt },
+          { type: 'image_url', image_url: { url: dataUrl } },
+        ] },
+      ],
+      temperature: 0.2,
+      max_tokens: 4096,
+    };
+    if (settings.providerId === 'deepseek') {
+      body.thinking = { type: 'disabled' };
+    }
+    let response;
+    try {
+      response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${settings.apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      clearTimeout(timer);
+      if (e && e.name === 'AbortError') {
+        throw new Error('请求超时（60 秒无响应）：可能是网络慢或图片过大，请换更小/更清晰的图片重试');
+      }
+      throw new Error('网络请求失败（可能被跨域/CORS 拦截或网络不可达）：' + (e.message || e));
+    }
+    clearTimeout(timer);
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const msg = err.error?.message || `HTTP ${response.status}`;
+      throw new Error('API 识别失败：' + msg);
+    }
+    const data = await response.json();
+    const msg = data.choices?.[0]?.message || {};
+    const content = (msg.content || '').trim();
+    const reasoning = (msg.reasoning_content || '').trim();
+    if (!content && !reasoning) {
+      const preview = JSON.stringify(data).slice(0, 600);
+      throw new Error('API 返回了空内容，原始响应：' + preview);
+    }
+    return content || reasoning;
+  }
+
   function parseResult(raw, rubric) {
     if (!raw) throw new Error('AI 返回为空');
 
-    // 尝试提取 JSON
     let jsonStr = raw.trim();
 
-    // 去掉 ```json ... ``` 包裹
     jsonStr = jsonStr.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
 
-    // 如果还是找不到 { ... }，尝试提取
     const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       jsonStr = jsonMatch[0];
@@ -363,11 +477,8 @@ ${text}
       throw new Error('AI 返回格式错误，请重试或更换模型');
     }
 
-    // 动态处理 scores：如果用户有自定义评分标准，scores 维度可能不同
     const scores = data.scores || {};
 
-    // 如果有自定义评分标准但 scores 仍是默认四维，尝试兼容
-    // 否则保留 AI 返回的任意维度
     const defaultScores = {
       grammar: scores.grammar ?? 0,
       vocabulary: scores.vocabulary ?? 0,
@@ -375,10 +486,8 @@ ${text}
       total: scores.total ?? 0,
     };
 
-    // 如果有自定义评分标准，使用 AI 返回的全部维度（动态）
     const finalScores = rubric && rubric.trim() ? { ...scores } : defaultScores;
 
-    // 数据校验与补全
     return {
       corrections: (data.corrections || []).map((c, i) => ({
         id: c.id || i + 1,
@@ -396,19 +505,17 @@ ${text}
     };
   }
 
-  /**
-   * 测试 API 连接
-   */
   async function testConnection(settings) {
-    if (!settings.apiKey) {
+    const resolved = resolveSettings(settings);
+    if (!resolved.apiKey) {
       throw new Error('请先填写 API Key');
     }
-    const providerConfig = getProviderConfig(settings.provider);
+    const providerConfig = getProviderConfig(resolved.provider);
     const mergedSettings = {
-      ...settings,
+      ...resolved,
       provider: providerConfig.type,
-      baseUrl: settings.baseUrl || providerConfig.baseUrl,
-      model: settings.model || providerConfig.model,
+      baseUrl: resolved.baseUrl || providerConfig.baseUrl,
+      model: resolved.model || providerConfig.model,
     };
     const testPrompt = '请用 JSON 格式回复：{"ok": true}';
     let result;
@@ -420,7 +527,7 @@ ${text}
     return { success: true, sample: result.slice(0, 100) };
   }
 
-  return { grade, testConnection, getProviderConfig, getProviders };
+  return { grade, testConnection, getProviderConfig, getProviders, recognizeImage };
 })();
 
 window.AIGrader = AIGrader;
