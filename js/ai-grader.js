@@ -32,7 +32,7 @@ const AIGrader = (() => {
       keyUrl: 'https://platform.deepseek.com/api_keys',
       keyPrefix: 'sk-',
       free: false,
-      vision: false,
+      vision: false,  // ⚠️ DeepSeek 的 API 是纯文本，不支持图片识别（官方无视觉模型）
       note: '性价比极高，文本批改能力强。但其 API 仅支持文字、不支持图片识别——「AI 看图识字」会自动回退本地 OCR。若想用 AI 看图，请在设置里把服务商换成通义千问等支持视觉的。base_url 为 https://api.deepseek.com（不带 /v1）。',
     },
     qwen: {
@@ -143,6 +143,9 @@ const AIGrader = (() => {
     },
   };
 
+  /**
+   * 获取预设服务商配置
+   */
   function getProviderConfig(providerId) {
     const base = PROVIDERS[providerId] || PROVIDERS.custom;
     const cfg = window.APP_CONFIG || {};
@@ -154,10 +157,13 @@ const AIGrader = (() => {
     return base;
   }
 
+  /**
+   * 获取所有预设服务商列表
+   */
   function getProviders() {
     return PROVIDERS;
   }
-
+  // 批改风格对应的提示词
   const STYLE_PROMPTS = {
     standard: '请像一位严谨的英语老师一样批改，指出语法、用词、搭配、逻辑等问题，并给出中肯的改进建议。',
     concise: '请只标注最关键的 3-5 个错误，简洁明了，重点突出。',
@@ -165,8 +171,16 @@ const AIGrader = (() => {
     advanced: '请从高级表达、学术写作角度批改，提出向母语者水平提升的建议。',
   };
 
+  /**
+   * 调用 AI 批改
+   * @param {string} text - 待批改的英文文本
+   * @param {Object} settings - { provider, apiKey, baseUrl, model, style, rubric }
+   * @returns {Promise<Object>} 批改结果
+   */
+  // 解析最终生效的设置：模型默认使用支持图片识别的视觉模型；API Key 必须来自用户设置
   function resolveSettings(settings) {
     const providerConfig = getProviderConfig(settings.provider);
+    // 默认使用支持图片识别的模型；用户/旧设置若已指定则尊重之
     const model = (settings.model || '').trim() || providerConfig.visionModel || providerConfig.model;
     return { ...settings, model };
   }
@@ -180,6 +194,7 @@ const AIGrader = (() => {
       throw new Error('未配置 API Key：请先在「设置」中填写你自己的 Key');
     }
 
+    // 用预设配置补全 baseUrl 和 model
     const providerConfig = getProviderConfig(resolved.provider);
     const mergedSettings = {
       ...resolved,
@@ -200,20 +215,29 @@ const AIGrader = (() => {
     return parseResult(result, settings.rubric);
   }
 
+  /**
+   * 构造批改 prompt
+   * @param {string} text - 学生作文
+   * @param {string} style - 批改风格
+   * @param {string} rubric - 用户自定义评分标准（可选）
+   */
   function buildPrompt(text, style, rubric) {
     const stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.standard;
 
+    // 评分标准部分
     let rubricSection = '';
     let scoreFields = '';
     let scoreJson = '';
     let scoreLabels = '';
 
     if (rubric && rubric.trim()) {
+      // 有自定义评分标准时，让 AI 按用户的标准来评分
       rubricSection = `\n## 用户自定义评分标准\n\n你必须严格按照以下评分标准来批改和评分：\n\n"""${rubric.trim()}"""\n\n**重要**：评分维度和权重必须与上述标准一致。`;
       scoreFields = '评分维度和权重必须与用户评分标准一致，按标准中定义的维度评分（0-100 或标准中指定的分数范围）。';
       scoreJson = 'scores 的维度必须与用户评分标准一致，如标准定义了 4 个维度就用 4 个维度，5 个就用 5 个，维度名称用英文 key。';
       scoreLabels = '必须与用户评分标准中的维度名称完全一致';
     } else {
+      // 默认评分标准
       scoreFields = `语法（grammar）：0-100\n   - 词汇（vocabulary）：0-100\n   - 逻辑（logic）：0-100\n   - 总分（total）：0-100`;
       scoreJson = `"grammar": 85,\n    "vocabulary": 88,\n    "logic": 90,\n    "total": 87`;
       scoreLabels = '默认的语法/词汇/逻辑/总分四维评分';
@@ -231,7 +255,7 @@ ${text}
 
 ## 批改要求
 
-1. **找出所有错误和值得改进的地方**（语法、用词、搭配、句式、逻辑等），按��现顺序编号（1, 2, 3...）。
+1. **找出所有错误和值得改进的地方**（语法、用词、搭配、句式、逻辑等），按出现顺序编号（1, 2, 3...）。
 2. **对每个错误**：
    - 标注错误类型（如：语法错误、搭配错误、用词不当、句式问题、拼写错误 等）
    - 用中文写一段简短的批注（1-2 句话），既要指出问题，也要肯定亮点
@@ -270,6 +294,9 @@ ${text}
 现在请开始批改。`;
   }
 
+  /**
+   * 调用 Google Gemini API
+   */
   async function callGemini(prompt, settings) {
     const model = settings.model || 'gemini-1.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.apiKey}`;
@@ -306,6 +333,9 @@ ${text}
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
+  /**
+   * 调用 OpenAI 兼容 API
+   */
   async function callOpenAICompatible(prompt, settings) {
     const baseUrl = (settings.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '');
     const model = settings.model || 'gpt-4o-mini';
@@ -341,20 +371,30 @@ ${text}
     return data.choices?.[0]?.message?.content || '';
   }
 
+  /**
+   * 多模态大模型识别图片中的文字（替代/增强 Tesseract OCR）
+   * 优先用 Gemini / 支持视觉的 OpenAI 兼容模型直接"看图识字"，
+   * 识别质量（尤其手写体、拍照、歪斜图）远胜本地 Tesseract。
+   * @param {string} dataUrl - 图片 dataURL（含 base64）
+   * @param {Object} settings - { provider, apiKey, baseUrl, model }
+   * @returns {Promise<string>} 识别出的文本
+   */
   async function recognizeImage(dataUrl, settings) {
     const resolved = resolveSettings(settings);
     if (!resolved.apiKey) {
       throw new Error('未配置 API Key：请先在「设置」中填写你自己的 Key');
     }
     const providerConfig = getProviderConfig(resolved.provider);
+    // 纯文本服务商（如 DeepSeek）的 API 看不到图片，明确报错，由上层回退本地 OCR 并提示。
     if (providerConfig.vision === false) {
       throw new Error(`所选服务商「${providerConfig.name}」的 API 仅支持文字、不支持图片识别。请改用通义千问、智谱、硅基流动、Gemini 等支持视觉的服务商，或继续使用本地 OCR 兜底。`);
     }
     const merged = {
       ...resolved,
       provider: providerConfig.type,
-      providerId: resolved.provider,
+      providerId: resolved.provider,   // 保留原始服务商 id（用于判断是否为 DeepSeek 等）
       baseUrl: resolved.baseUrl || providerConfig.baseUrl,
+      // 看图识字强制使用服务商自带的视觉模型（如 qwen-vl-max），不依赖 user 为批改选的纯文本模型
       model: providerConfig.visionModel || providerConfig.model,
     };
     const mime = (dataUrl.match(/^data:([^;]+);base64,/) || [])[1] || 'image/jpeg';
@@ -369,6 +409,8 @@ ${text}
     if (merged.provider === 'gemini') {
       return await callGeminiVision(prompt, merged, mime, b64);
     }
+    // OpenAI 兼容：直接尝试图片识别。支持视觉的模型（GPT-4o、DeepSeek V4、
+    // 通义 VL、智谱 GLM-4V 等）会正常返回；纯文本模型会报错，由上层回退本地 Tesseract。
     return await callOpenAICompatibleVision(prompt, merged, dataUrl);
   }
 
@@ -408,6 +450,8 @@ ${text}
     const model = settings.model || 'gpt-4o-mini';
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 60000);
+    // 组装请求体。thinking 参数只发给 DeepSeek：V4 默认开启思考模式，看图识字无需推理，
+    // 关闭后答案落在 content；其他 OpenAI 兼容服务商（如 OpenAI 官方）不认识该字段可能报错。
     const body = {
       model,
       messages: [
@@ -438,6 +482,7 @@ ${text}
       if (e && e.name === 'AbortError') {
         throw new Error('请求超时（60 秒无响应）：可能是网络慢或图片过大，请换更小/更清晰的图片重试');
       }
+      // 网络层失败：最常见是浏览器跨域(CORS)被拦，或网络不可达
       throw new Error('网络请求失败（可能被跨域/CORS 拦截或网络不可达）：' + (e.message || e));
     }
     clearTimeout(timer);
@@ -450,6 +495,8 @@ ${text}
     const msg = data.choices?.[0]?.message || {};
     const content = (msg.content || '').trim();
     const reasoning = (msg.reasoning_content || '').trim();
+    // 兼容两种返回：常规 content，或思考模式下的 reasoning_content；
+    // 两者皆空说明模型确实没返回文字（如模型不支持看图、或返回异常），明确抛出便于排查，避免静默回退。
     if (!content && !reasoning) {
       const preview = JSON.stringify(data).slice(0, 600);
       throw new Error('API 返回了空内容，原始响应：' + preview);
@@ -457,13 +504,22 @@ ${text}
     return content || reasoning;
   }
 
+  /**
+   * 解析 AI 返回的结果
+   * 处理可能的 markdown 代码块包裹
+   * @param {string} raw - AI 返回的原始文本
+   * @param {string} rubric - 用户自定义评分标准（用于决定评分维度）
+   */
   function parseResult(raw, rubric) {
     if (!raw) throw new Error('AI 返回为空');
 
+    // 尝试提取 JSON
     let jsonStr = raw.trim();
 
+    // 去掉 ```json ... ``` 包裹
     jsonStr = jsonStr.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
 
+    // 如果还是找不到 { ... }，尝试提取
     const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       jsonStr = jsonMatch[0];
@@ -477,8 +533,11 @@ ${text}
       throw new Error('AI 返回格式错误，请重试或更换模型');
     }
 
+    // 动态处理 scores：如果用户有自定义评分标准，scores 维度可能不同
     const scores = data.scores || {};
 
+    // 如果有自定义评分标准但 scores 仍是默认四维，尝试兼容
+    // 否则保留 AI 返回的任意维度
     const defaultScores = {
       grammar: scores.grammar ?? 0,
       vocabulary: scores.vocabulary ?? 0,
@@ -486,8 +545,10 @@ ${text}
       total: scores.total ?? 0,
     };
 
+    // 如果有自定义评分标准，使用 AI 返回的全部维度（动态）
     const finalScores = rubric && rubric.trim() ? { ...scores } : defaultScores;
 
+    // 数据校验与补全
     return {
       corrections: (data.corrections || []).map((c, i) => ({
         id: c.id || i + 1,
@@ -505,6 +566,9 @@ ${text}
     };
   }
 
+  /**
+   * 测试 API 连接
+   */
   async function testConnection(settings) {
     const resolved = resolveSettings(settings);
     if (!resolved.apiKey) {
