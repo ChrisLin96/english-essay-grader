@@ -57,11 +57,14 @@ const Renderer = (() => {
       studentName = '',
     } = data;
 
+    // 更新标题
     document.getElementById('essayTitle').textContent = title;
 
+    // 字数统计
     const wordCount = countWords(text);
     document.getElementById('wordCount').textContent = wordCount;
 
+    // 学生姓名（屏幕与打印均显示）
     const resultStudent = document.getElementById('resultStudent');
     if (resultStudent) {
       if (studentName && studentName.trim()) {
@@ -73,11 +76,22 @@ const Renderer = (() => {
       }
     }
 
+    // 渲染原文全文（带错误标注，便于通读上下文）
     renderEssayText(text, corrections);
+
+    // 渲染逐条批注列表（右栏，与左栏原文左右对称）
     renderCommentList(corrections);
+
+    // 渲染颜色分类图例（一一对应说明）
     renderLegend(corrections);
+
+    // 渲染总评
     renderOverall(overall);
+
+    // 渲染评分卡
     renderScores(scores, maxScores);
+
+    // 绑定交互
     bindCorrectionsInteraction();
   }
 
@@ -86,6 +100,7 @@ const Renderer = (() => {
    */
   function countWords(text) {
     if (!text) return 0;
+    // 按空格分割，过滤空字符串
     const words = text.trim().split(/\s+/).filter(Boolean);
     return words.length;
   }
@@ -95,33 +110,44 @@ const Renderer = (() => {
    */
   function renderEssayText(text, corrections) {
     const container = document.getElementById('essayText');
+
+    // 按段落分割
     const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim());
+
     let html = '';
     paragraphs.forEach((para, pIdx) => {
       html += '<p>' + highlightParagraph(para, corrections) + '</p>';
     });
+
     container.innerHTML = html;
   }
 
   /**
    * 在一个段落中标记错误位置
+   * 算法：将段落中的所有错误区间合并，按位置顺序插入 span
    */
   function highlightParagraph(para, corrections) {
     if (!corrections.length) return escapeHtml(para);
 
+    // 找出本段落内的错误（按 corrected / original 匹配，或按 start/end 范围）
     const matches = findMatchesInParagraph(para, corrections);
     if (!matches.length) return escapeHtml(para);
 
+    // 排序：按 start 升序，重叠的按长度优先
     matches.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
 
+    // 合并重叠区间（如果两个错误区间重叠，保留前者）
     const merged = mergeOverlaps(matches);
 
+    // 构建 HTML
     let html = '';
     let cursor = 0;
     merged.forEach(m => {
+      // 之前的普通文本
       if (m.start > cursor) {
         html += escapeHtml(para.slice(cursor, m.start));
       }
+      // 错误标记：用该批注类型的颜色，原文标注与右侧批注共用同一颜色，完全一致
       const markClass = 'error-mark';
       const colorVars = `style="--mark-color:${m.color};--mark-bg:${hexToRgba(m.color, 0.12)};--mark-bg-strong:${hexToRgba(m.color, 0.26)}"`;
       html += `<span class="${markClass}" ${colorVars} data-correction-id="${m.id}" data-start="${m.start}" data-end="${m.end}">`;
@@ -130,6 +156,7 @@ const Renderer = (() => {
       html += '</span>';
       cursor = m.end;
     });
+    // 剩余文本
     if (cursor < para.length) {
       html += escapeHtml(para.slice(cursor));
     }
@@ -138,6 +165,7 @@ const Renderer = (() => {
 
   /**
    * 在段落中查找错误位置
+   * 优先用 start/end，如果没有则用 original 文本匹配
    */
   function findMatchesInParagraph(para, corrections) {
     const matches = [];
@@ -146,6 +174,7 @@ const Renderer = (() => {
     corrections.forEach(c => {
       let start = -1, end = -1;
 
+      // 1) 如果有 start/end 且在段落内
       if (typeof c.start === 'number' && typeof c.end === 'number') {
         if (c.start >= paraOffset && c.end <= paraOffset + para.length) {
           start = c.start - paraOffset;
@@ -153,6 +182,7 @@ const Renderer = (() => {
         }
       }
 
+      // 2) 用 original 字符串匹配
       if (start < 0 && c.original) {
         const idx = para.indexOf(c.original);
         if (idx >= 0) {
@@ -162,6 +192,7 @@ const Renderer = (() => {
       }
 
       if (start >= 0 && end > start) {
+        // 原文标注与批注建议共用同一类型颜色，一一对应
         const color = colorForType(c.type);
         matches.push({ id: c.id, start, end, color, type: c.type });
       }
@@ -175,6 +206,7 @@ const Renderer = (() => {
     matches.forEach(m => {
       const last = result[result.length - 1];
       if (last && m.start < last.end) {
+        // 重叠，保留 last（更靠前）
         return;
       }
       result.push(m);
@@ -183,14 +215,19 @@ const Renderer = (() => {
   }
 
   /**
-   * 构建单条批注卡片的内部 HTML
+   * 构建单条批注卡片的内部 HTML（工具条 + 正文 + 修改建议）
+   * 同时用于「逐条左右配对」的右侧单元格
    */
   function buildCommentInner(c) {
+    // 找到当前批注对应的分类（用于下拉框选中）
     const color = colorForType(c.type);
     const cat = TYPE_COLORS.find(t => t.color === color) || TYPE_COLORS[TYPE_COLORS.length - 1];
     const opts = TYPE_COLORS.map(t =>
       `<option value="${t.key}" ${t.key === cat.key ? 'selected' : ''}>${t.label}</option>`
     ).join('');
+    // 「建议修改的句子」（corrected）始终渲染为可编辑区块：
+    // - 有值时显示绿框建议；空值时显示占位提示，进入编辑模式后可补填。
+    // 通过 .suggest-text（contenteditable，由 applyEditMode 切换）允许用户修改任意批注内容。
     const correctedTrim = (c.corrected || '').trim();
     const suggestHtml = `
       <div class="comment-suggest${correctedTrim ? '' : ' is-empty'}">
@@ -210,6 +247,8 @@ const Renderer = (() => {
 
   /**
    * 渲染「左右对称」两栏批注列表（右栏：逐条批注卡片）
+   * 每张卡片左侧带与原文标注一致的编号徽标（来自 data-num，由 .comment-item::before 渲染），
+   * 边框颜色也与左栏原文标注同色，实现左右一一对应。
    */
   function renderCommentList(corrections) {
     const list = document.getElementById('commentList');
@@ -219,6 +258,7 @@ const Renderer = (() => {
     }
 
     list.innerHTML = corrections.map(c => {
+      // 优先用真实的 start/end，没有就传 0（不影响显示）
       const start = c.start || 0;
       const end = c.end || 0;
       const color = colorForType(c.type);
@@ -232,6 +272,7 @@ const Renderer = (() => {
 
   /**
    * 渲染颜色分类图例
+   * 展示本次批改中出现的批注类型与对应颜色，帮助理解「原文↔批注」的一一对应
    */
   function renderLegend(corrections) {
     const bar = document.getElementById('legendBar');
@@ -240,6 +281,7 @@ const Renderer = (() => {
       bar.hidden = true;
       return;
     }
+    // 统计出现的分类（去重，保持首次出现顺序）
     const seen = new Map();
     corrections.forEach(c => {
       const color = colorForType(c.type);
@@ -247,6 +289,7 @@ const Renderer = (() => {
       if (!seen.has(label)) seen.set(label, color);
     });
     let html = '<span class="legend-title">标注类型</span>';
+    // 原文标注与右侧批注共用此颜色，一一对应
     seen.forEach((color, label) => {
       html += `<span class="legend-item"><span class="legend-dot" style="background:${color}"></span>${escapeHtml(label)}</span>`;
     });
@@ -263,10 +306,12 @@ const Renderer = (() => {
 
   /**
    * 渲染评分卡
+   * 支持动态维度（自定义评分标准可能有不同维度）
    */
   function renderScores(scores, maxScores) {
     const scoreCardsContainer = document.getElementById('scoreCards');
 
+    // 评分维度的中文映射
     const SCORE_LABELS = {
       grammar: '语法',
       vocabulary: '词汇',
@@ -288,13 +333,16 @@ const Renderer = (() => {
       communicativeAchievement: '交际能力',
     };
 
+    // 获取各维度满分：优先用 maxScores，默认 100
     function getMax(key) {
       if (maxScores && maxScores[key] != null) return maxScores[key];
       return maxScores && maxScores._default != null ? maxScores._default : 100;
     }
 
+    // 默认满分（用于显示）
     const defaultMax = getMax('_default');
 
+    // 判断是否是默认四维评分
     const keys = Object.keys(scores);
     const isDefault = keys.length === 4 && keys.includes('grammar') && keys.includes('vocabulary') && keys.includes('logic') && keys.includes('total');
 
@@ -309,6 +357,7 @@ const Renderer = (() => {
    * 构建默认四维评分卡 HTML
    */
   function buildDefaultScoreCardsHTML(scores, defaultMax) {
+    // 所有评分卡只显示得分数字，不显示满分（/100）
     const fmtPlain = (val) => val != null ? `<span class="score-num">${val}</span>` : '<span class="score-num">--</span>';
     return `
       <div class="score-card">
@@ -343,6 +392,7 @@ const Renderer = (() => {
       return defaultMax;
     }
 
+    // 所有评分卡只显示得分数字，不显示满分（/100）
     const fmtPlain = (val) => val != null ? `<span class="score-num">${val}</span>` : '<span class="score-num">--</span>';
 
     let html = '';
@@ -371,8 +421,10 @@ const Renderer = (() => {
 
   /**
    * 把英文 key 转为可读中文标签
+   * 例如 "taskAchievement" → "任务完成"
    */
   function humanizeKey(key) {
+    // 尝试简单转换
     const map = {
       'taskAchievement': '任务完成',
       'coherence': '连贯',
@@ -387,13 +439,17 @@ const Renderer = (() => {
       'format': '格式',
     };
     if (map[key]) return map[key];
+    // 通用处理：驼峰 → 词拆分
     return key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
   }
 
   /**
    * 绑定错误标注和批注的交互
+   * - 点击错误：滚动到对应批注并高亮
+   * - 点击批注：滚动到对应错误并高亮
    */
   function bindCorrectionsInteraction() {
+    // 错误 → 批注
     document.querySelectorAll('.error-mark').forEach(el => {
       el.addEventListener('click', () => {
         const id = el.dataset.correctionId;
@@ -402,6 +458,7 @@ const Renderer = (() => {
       });
     });
 
+    // 批注 → 错误（编辑模式下点击批注不跳转，允许就地编辑）
     document.querySelectorAll('.comment-item').forEach(el => {
       el.addEventListener('click', () => {
         if (document.body.classList.contains('annotation-editing')) return;

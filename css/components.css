@@ -421,7 +421,6 @@
   transition: all 0.15s;
   cursor: pointer;
 }
-
 .history-item:hover {
   box-shadow: var(--shadow);
   transform: translateX(2px);
