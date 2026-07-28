@@ -81,6 +81,12 @@ const Storage = (() => {
       const list = History.list().map(r => r.id === id ? { ...r, title } : r);
       set(KEYS.HISTORY, list);
     },
+    // 合并更新某条记录（用于保存老师编辑后的批注 / 总评 / 分数）
+    update(id, patch) {
+      const list = History.list().map(r => r.id === id ? { ...r, ...patch } : r);
+      set(KEYS.HISTORY, list);
+      return list.find(r => r.id === id) || null;
+    },
     remove(id) {
       const list = History.list().filter(r => r.id !== id);
       set(KEYS.HISTORY, list);

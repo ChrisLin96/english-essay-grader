@@ -28,6 +28,12 @@
     </div>
   </header>
 
+  <!-- 顶部功能切换 -->
+  <nav class="tab-bar" id="tabBar">
+    <button class="tab-btn active" id="tabGrade" type="button">📝 作文批改</button>
+    <button class="tab-btn" id="tabDictation" type="button">🔤 单词听写</button>
+  </nav>
+
   <!-- 主体内容 -->
   <main class="app-main" id="appMain">
     <!-- 加载中状态 -->
@@ -70,6 +76,10 @@
           <button class="btn btn-text" id="emptyDemoBtn">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             查看示例效果
+          </button>
+          <button class="btn btn-secondary" id="rubricStandardBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            批改标准
           </button>
         </div>
       </div>
@@ -152,6 +162,87 @@
       </section>
     </article>
 
+    <!-- 单词听写 / 跟读练习 -->
+    <section class="dictation-view" id="dictationView" hidden>
+      <div class="dictation-wrap">
+        <div class="dictation-head">
+          <h2>单词听写 · 跟读练习</h2>
+          <p class="dictation-sub">拍照或手动输入单词 / 句子，AI 逐条朗读，间隔自由设定。支持中英文。</p>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="dict-card">
+          <div class="dict-input-tabs">
+            <button class="dictab active" data-input="photo" type="button">📷 拍照 / 上传</button>
+            <button class="dictab" data-input="manual" type="button">✍️ 手动输入</button>
+          </div>
+
+          <div class="dict-input-body">
+            <textarea id="dictText" class="dict-text" rows="8" placeholder="每行一个单词或句子，例如：&#10;apple&#10;banana&#10;Hello, how are you?&#10;苹果&#10;谢谢你"></textarea>
+
+            <div class="dict-photo" id="dictPhotoBox" hidden>
+              <input type="file" id="dictPhotoCameraInput" accept="image/*" capture="environment" hidden>
+              <input type="file" id="dictPhotoFileInput" accept="image/*" multiple hidden>
+              <div class="dict-photo-actions">
+                <button class="btn btn-secondary" id="dictPhotoCameraBtn" type="button">📷 拍照</button>
+                <button class="btn btn-secondary" id="dictPhotoFileBtn" type="button">🖼️ 选择图片（可多选）</button>
+              </div>
+              <span class="dict-photo-name" id="dictPhotoName"></span>
+              <p class="dict-photo-hint">已填 API Key 时用 AI 大模型识别图内单词/句子（支持中英文），未填则回退本地 OCR（仅英文）。识别结果自动按行拆成词条并加序号。可一次选多张图，依次识别并合并。</p>
+              <div class="dict-photo-preview" id="dictPhotoPreview"></div>
+            </div>
+          </div>
+
+          <div class="dict-input-actions">
+            <span class="dict-count" id="dictCount">0 条</span>
+            <button class="btn btn-text" id="dictClearBtn" type="button">清空</button>
+          </div>
+        </div>
+
+        <!-- 设置区 -->
+        <div class="dict-card dict-settings">
+          <div class="dict-setting">
+            <label class="dict-setting-label">朗读语言</label>
+            <select id="dictLang" class="dict-select">
+              <option value="auto">自动检测（中 / 英）</option>
+              <option value="zh-CN">中文</option>
+              <option value="en-US">英文</option>
+            </select>
+          </div>
+          <div class="dict-setting">
+            <label class="dict-setting-label">朗读间隔 <span class="dict-setting-val" id="dictIntervalVal">1.5 秒</span></label>
+            <input type="range" id="dictInterval" class="dict-range" min="1" max="10" step="0.5" value="1.5">
+          </div>
+          <div class="dict-setting">
+            <label class="dict-setting-label">语速 <span class="dict-setting-val" id="dictRateVal">1.0×</span></label>
+            <input type="range" id="dictRate" class="dict-range" min="0.5" max="1.5" step="0.1" value="1">
+          </div>
+          <div class="dict-setting dict-setting-switch" style="display:none">
+            <label class="dict-switch-label">
+              <span>AI 朗读（更自然的语音）</span>
+              <span class="dict-switch-hint" id="dictAiTtsHint"></span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="dictAiTts" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 播放控制 -->
+        <div class="dictation-controls">
+          <button class="btn btn-primary" id="dictPlayBtn" type="button">▶ 开始朗读</button>
+          <button class="btn btn-secondary" id="dictPauseBtn" type="button" hidden>⏸ 暂停</button>
+          <button class="btn btn-ghost" id="dictStopBtn" type="button">⏹ 停止</button>
+          <button class="btn btn-text" id="dictPrevBtn" type="button">⏮ 上一个</button>
+          <button class="btn btn-text" id="dictNextBtn" type="button">下一个 ⏭</button>
+        </div>
+
+        <!-- 词列表 -->
+        <ol class="dictation-list" id="dictList"></ol>
+      </div>
+    </section>
+
     <!-- 错误提示 -->
     <div class="toast" id="toast" hidden>
       <span class="toast-icon" id="toastIcon"></span>
@@ -211,6 +302,32 @@
           <input type="password" class="form-input" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
           <div class="provider-hint" id="providerHint"></div>
         </div>
+        <!-- 批改风格 / 自定义评分标准 / 快速填入模板 已移至主页「批改标准」弹窗 -->
+        <div class="form-info">
+          <p>💡 推荐选一个同时支持文字与图片的服务商（如通义千问、智谱、硅基流动、Gemini），这样「AI 批改」和「AI 看图识字」用同一个 Key 一次搞定。</p>
+          <p>📷 本地 OCR 完全在浏览器中完成，无需联网；但「AI 看图识字」需要联网调用视觉模型。</p>
+          <p>🔑 请在上方填写你自己的 API Key（保存在本地浏览器，不会上传），否则 AI 批改 / 看图识字不可用。纯前端站点不内置任何 Key。</p>
+          <p>⚠️ 若所选服务商不支持图片（如 DeepSeek 的 API 仅支持文字），「AI 看图识字」会自动回退到本地 OCR（准确率较低）。想用 AI 看图，把服务商改成支持视觉的即可。</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-text" id="testApiBtn">测试连接</button>
+          <button class="btn btn-primary" id="saveSettingsBtn">保存设置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批改标准弹窗（主页「批改标准」按钮打开；整合批改风格 / 自定义评分标准 / 快速填入模板） -->
+  <div class="modal" id="rubricModal" hidden>
+    <div class="modal-mask" data-close-rubric></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>批改标准</h2>
+        <button class="modal-close" data-close-rubric aria-label="关闭">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
         <div class="form-group">
           <label class="form-label">批改风格</label>
           <select class="form-input" id="styleSelect">
@@ -245,15 +362,8 @@
             <button class="rubric-template-btn" data-template="toefl">托福写作</button>
           </div>
         </div>
-        <div class="form-info">
-          <p>💡 推荐选一个同时支持文字与图片的服务商（如通义千问、智谱、硅基流动、Gemini），这样「AI 批改」和「AI 看图识字」用同一个 Key 一次搞定。</p>
-          <p>📷 本地 OCR 完全在浏览器中完成，无需联网；但「AI 看图识字」需要联网调用视觉模型。</p>
-          <p>🔑 请在上方填写你自己的 API Key（保存在本地浏览器，不会上传），否则 AI 批改 / 看图识字不可用。纯前端站点不内置任何 Key。</p>
-          <p>⚠️ 若所选服务商不支持图片（如 DeepSeek 的 API 仅支持文字），「AI 看图识字」会自动回退到本地 OCR（准确率较低）。想用 AI 看图，把服务商改成支持视觉的即可。</p>
-        </div>
         <div class="form-actions">
-          <button class="btn btn-text" id="testApiBtn">测试连接</button>
-          <button class="btn btn-primary" id="saveSettingsBtn">保存设置</button>
+          <button class="btn btn-primary" id="rubricSaveBtn">保存批改标准</button>
         </div>
       </div>
     </div>

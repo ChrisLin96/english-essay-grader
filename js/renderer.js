@@ -361,19 +361,19 @@ const Renderer = (() => {
     const fmtPlain = (val) => val != null ? `<span class="score-num">${val}</span>` : '<span class="score-num">--</span>';
     return `
       <div class="score-card">
-        <div class="score-value">${fmtPlain(scores.grammar)}</div>
+        <div class="score-value" data-score-key="grammar">${fmtPlain(scores.grammar)}</div>
         <div class="score-label">语法</div>
       </div>
       <div class="score-card">
-        <div class="score-value">${fmtPlain(scores.vocabulary)}</div>
+        <div class="score-value" data-score-key="vocabulary">${fmtPlain(scores.vocabulary)}</div>
         <div class="score-label">词汇</div>
       </div>
       <div class="score-card">
-        <div class="score-value">${fmtPlain(scores.logic)}</div>
+        <div class="score-value" data-score-key="logic">${fmtPlain(scores.logic)}</div>
         <div class="score-label">逻辑</div>
       </div>
       <div class="score-card score-card-main">
-        <div class="score-value">${fmtPlain(scores.total)}</div>
+        <div class="score-value" data-score-key="total">${fmtPlain(scores.total)}</div>
         <div class="score-label">总分</div>
       </div>
     `;
@@ -401,7 +401,7 @@ const Renderer = (() => {
       const label = labels[key] || humanizeKey(key);
       html += `
         <div class="score-card">
-          <div class="score-value">${fmtPlain(scores[key])}</div>
+          <div class="score-value" data-score-key="${key}">${fmtPlain(scores[key])}</div>
           <div class="score-label">${escapeHtml(label)}</div>
         </div>
       `;
@@ -410,7 +410,7 @@ const Renderer = (() => {
     if (totalKey) {
       html += `
         <div class="score-card score-card-main">
-          <div class="score-value">${fmtPlain(scores[totalKey])}</div>
+          <div class="score-value" data-score-key="${totalKey}">${fmtPlain(scores[totalKey])}</div>
           <div class="score-label">${labels[totalKey] || '总分'}</div>
         </div>
       `;

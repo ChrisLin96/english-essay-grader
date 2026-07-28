@@ -126,6 +126,17 @@
     break-inside: avoid !important;
   }
 
+  /* 打印时把编辑态的数字输入框还原成纯文字，避免边框/背景影响输出 */
+  .score-input {
+    border: none !important;
+    background: transparent !important;
+    -webkit-appearance: none;
+    appearance: none;
+    color: inherit !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+
   /* 导出 PDF 的页眉：居中机构名 + 学生姓名，位于结果区顶部、带底部分隔线 */
   .print-header {
     display: block !important;
