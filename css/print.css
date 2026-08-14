@@ -35,8 +35,10 @@
     display: none !important;
   }
 
-  /* 结果区恢复正常文档流，完整输出（不再绝对定位，避免内容被裁掉） */
-  #essayResult {
+  /* 结果区恢复正常文档流，完整输出（不再绝对定位，避免内容被裁掉）。
+     同时覆盖单篇(#essayResult)与批量导出(.essay-result)两种形态 */
+  #essayResult,
+  .essay-result {
     display: block !important;
     position: static !important;
     left: auto !important;
@@ -48,6 +50,22 @@
     border: none !important;
     border-radius: 0 !important;
     background: #ffffff !important;
+    /* 关键修复：批量导出的 .essay-result 是刚插入 DOM 的新节点，
+       会重新触发 main.css 里的 fadeIn 入场动画（from { opacity: 0 }）。
+       打印快照时动画尚未播完，opacity≈0 导致整页空白。
+       打印时必须禁用动画，否则「单篇正常、批量空白」。 */
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* 同样禁用结果区内部所有子元素的动画/过渡，防止打印快照时出现透明或位移残留 */
+  .essay-result * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   /* 强制保留彩色（标注下划线、编号圈、得分卡底色等） */
@@ -156,4 +174,36 @@
     color: #374151;
     margin-top: 2mm;
   }
+
+  /* 批量 / 全部导出：只打印合并副本，避免与原始结果区重复 */
+  body.exporting-all > #essayResult { display: none !important; }
+  body.exporting-all #batchResult,
+  body.exporting-all #homeLayout,
+  body.exporting-all #dictationView,
+  body.exporting-all .tab-bar { display: none !important; }
+  body.exporting-all #printAll { display: block !important; }
+  /* 导出副本里的每篇报告：用 class 定位（无 id），避免与原始 #essayResult 的隐藏/定位规则冲突 */
+  body.exporting-all .print-all-item .essay-result {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+  }
+  body.exporting-all .print-doc-title {
+    display: block !important;
+    font-size: 15pt;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4mm !important;
+  }
+  body.exporting-all .print-all-item {
+    page-break-after: always;
+    break-after: page;
+  }
+  body.exporting-all .print-all-item:last-child { page-break-after: auto; break-after: auto; }
 }

@@ -162,6 +162,24 @@
       </section>
     </article>
 
+    <!-- 批量批改结果 -->
+    <section class="batch-view" id="batchResult" hidden>
+      <div class="batch-toolbar">
+        <button class="btn btn-secondary" id="batchBackBtn" type="button">← 返回主页</button>
+        <h2 class="batch-title">批量批改结果</h2>
+        <button class="btn btn-secondary" id="batchExportBtn" type="button" disabled>导出全部 PDF</button>
+      </div>
+      <div class="batch-progress" id="batchProgress" hidden>
+        <div class="batch-progress-track"><div class="batch-progress-fill" id="batchProgressFill"></div></div>
+        <span class="batch-progress-text" id="batchProgressText">0 / 0 完成</span>
+      </div>
+      <p class="batch-hint" id="batchHint"></p>
+      <div class="batch-grid" id="batchGrid"></div>
+    </section>
+
+    <!-- 批量 / 全部导出打印容器（仅打印时显示） -->
+    <div id="printAll" class="print-all" hidden></div>
+
     <!-- 单词听写 / 跟读练习 -->
     <section class="dictation-view" id="dictationView" hidden>
       <div class="dictation-wrap">

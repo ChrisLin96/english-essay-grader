@@ -201,6 +201,9 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     isProcessing: false,       // 是否正在批改
     annotationEditing: false,  // 批注建议默认不可编辑，需点击「✎ 编辑」后才开放自定义编辑
     currentHistoryId: null,     // 当前批改对应的历史记录 id（编辑时同步写回历史）
+    currentItemId: null,        // 若当前批改来自批量组，则记录组内子记录的 itemId（写回历史时定位）
+    fromBatch: false,          // 当前单篇视图是否从批量列表点入（用于返回逻辑）
+    batch: { items: [], results: [], groupId: null }, // 批量批改：待处理项、已完成结果、历史分组 id
   };
 
   // ===========================
@@ -221,6 +224,15 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     essayResult: $('essayResult'),
     loadingState: $('loadingState'),
     loadingText: $('loadingText'),
+    batchResult: $('batchResult'),
+    batchGrid: $('batchGrid'),
+    batchProgress: $('batchProgress'),
+    batchProgressFill: $('batchProgressFill'),
+    batchProgressText: $('batchProgressText'),
+    batchHint: $('batchHint'),
+    batchBackBtn: $('batchBackBtn'),
+    batchExportBtn: $('batchExportBtn'),
+    printAll: $('printAll'),
     appFooter: $('appFooter'),
     fab: $('fabBtn'),
     toast: $('toast'),
@@ -273,12 +285,14 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     els.essayResult.hidden = name !== 'result';
     els.loadingState.hidden = name !== 'loading';
     els.dictationView.hidden = name !== 'dictation';
+    els.batchResult.hidden = name !== 'batch';
     els.appFooter.hidden = name !== 'result';
     els.fab.hidden = name !== 'result';
     // 顶部功能切换栏：在「主页 / 单词听写」显示，批改结果等专注视图隐藏
     els.tabBar.hidden = !(name === 'empty' || name === 'dictation');
     // 进入主页时刷新历史记录面板
     if (name === 'empty') renderHistoryPanel();
+    if (name === 'batch') state.fromBatch = true;
   }
 
   // ===========================
@@ -427,7 +441,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         <div class="input-body">
           <div class="tab-pane ${defaultTab === 'upload' ? 'active' : ''}" data-pane="upload">
             <div class="upload-zone" id="uploadZone">
-              <input type="file" id="fileInput" accept="image/*" capture="environment">
+              <input type="file" id="fileInput" accept="image/*" capture="environment" multiple>
               <div class="upload-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </div>
@@ -447,6 +461,18 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
             <div id="ocrProgress" class="ocr-progress" hidden>
               <div class="spinner"></div>
               <span id="ocrProgressText">正在识别图片文字...</span>
+            </div>
+            <div id="batchPrep" class="batch-prep" hidden>
+              <div class="batch-prep-head">
+                <span id="batchPrepCount" class="batch-prep-count">已选择 0 张图片</span>
+                <div class="batch-prep-actions">
+                  <input type="file" id="batchAppendInput" accept="image/*" multiple hidden>
+                  <button class="btn btn-secondary" id="batchAppendBtn" type="button">➕ 追加图片</button>
+                  <button class="btn btn-primary" id="batchStartBtn" type="button">开始批量批改</button>
+                </div>
+              </div>
+              <div class="batch-prep-list" id="batchPrepList"></div>
+              <p class="batch-prep-hint">每张图识别后可在此修改文字或填写学生姓名，确认无误后点「开始批量批改」。</p>
             </div>
           </div>
           <div class="tab-pane ${defaultTab === 'text' ? 'active' : ''}" data-pane="text">
@@ -574,12 +600,17 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       });
     });
 
-    // 文件选择
+    // 文件选择（支持多选 → 批量批改）
     const fileInput = $('fileInput');
     fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      await handleImageSelected(file, dialog);
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      if (files.length === 1) {
+        await handleImageSelected(files[0], dialog);
+      } else {
+        await handleMultipleImages(files, dialog);
+      }
+      fileInput.value = ''; // 允许重复选择同一张
     });
 
     // 拖拽
@@ -598,9 +629,12 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     });
     zone.addEventListener('drop', async (e) => {
       e.preventDefault();
-      const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) {
-        await handleImageSelected(file, dialog);
+      const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+      if (!files.length) return;
+      if (files.length === 1) {
+        await handleImageSelected(files[0], dialog);
+      } else {
+        await handleMultipleImages(files, dialog);
       }
     });
 
@@ -623,7 +657,32 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     $('submitGradeBtn').addEventListener('click', async () => {
       await submitGrade(dialog);
     });
+
+    // 批量批改：开始处理已准备好的多张图片
+    const startBtn = dialog.querySelector('#batchStartBtn');
+    if (startBtn) {
+      startBtn.addEventListener('click', async () => {
+        await startBatchFromDialog(dialog);
+      });
+    }
+
+    // 批量准备中追加更多图片
+    const appendBtn = dialog.querySelector('#batchAppendBtn');
+    const appendInput = dialog.querySelector('#batchAppendInput');
+    if (appendBtn && appendInput) {
+      appendBtn.addEventListener('click', () => appendInput.click());
+      appendInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        e.target.value = ''; // 允许重复选择同一张
+        if (files.length) await appendImagesToBatch(files, dialog);
+      });
+    }
   }
+
+  // 批量准备阶段的图片项（模块级，供 batchStartBtn 使用）
+  let batchPrepItems = [];
+  let batchPrepDialog = null;
+  let batchPrepSeq = 0;
 
   async function handleImageSelected(file, dialog) {
     if (file.size > 10 * 1024 * 1024) {
@@ -869,6 +928,511 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
   }
 
+  // ===========================
+  // 批量批改（多图 → 同时处理多篇）
+  // ===========================
+  // 并发上限：同一时刻最多处理多少篇（过高可能触发免费 API 额度限流）。
+  // 想提速就调大，想最稳就调小，改这一个值即可。
+  const BATCH_CONCURRENCY = 6;
+  async function mapPool(items, limit, fn) {
+    let i = 0;
+    const queue = items.slice();
+    const runner = async () => {
+      while (queue.length) {
+        const item = queue.shift();
+        const idx = i++;
+        await fn(item, idx);
+      }
+    };
+    const n = Math.min(limit, items.length);
+    await Promise.all(Array.from({ length: n }, () => runner()));
+  }
+
+  function computeTotal(scores) {
+    if (!scores || typeof scores !== 'object') return null;
+    if (typeof scores.total === 'number' && !isNaN(scores.total)) return Math.round(scores.total);
+    const vals = Object.values(scores).filter(v => typeof v === 'number' && !isNaN(v));
+    if (!vals.length) return null;
+    return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+  }
+
+  // 是否值得自动重试：限流(429)/超时/5xx/网络抖动 视为可重试；401 鉴权、400 入参等直接失败不重试
+  function isRetryableError(e) {
+    const s = (e && (e.message || '')) + ' ' + (e && e.stack || '');
+    return /(429|rate.?limit|too many requests|RESOURCE_EXHAUSTED|quota|exceeded|throttle|限流|超时|请求超时|timeout|ETIMEDOUT|ECONNRESET|ECONNREFUSED|fetch failed|network|网络请求失败|ENOTFOUND|EAI_AGAIN|500|502|503|504|bad gateway|service unavailable|gateway timeout|internal server error)/i.test(s);
+  }
+
+  // 带指数退避的自动重试：遇到可重试错误时等待后重发，最多 retries 次；onRetry 可更新 UI 状态
+  async function withRetry(fn, { retries = 3, baseDelay = 1200, maxDelay = 9000, onRetry } = {}) {
+    let attempt = 0;
+    for (;;) {
+      try {
+        return await fn();
+      } catch (e) {
+        if (!isRetryableError(e) || attempt >= retries) throw e;
+        attempt++;
+        const delay = Math.min(maxDelay, baseDelay * Math.pow(2, attempt - 1)) + Math.floor(Math.random() * 400);
+        if (onRetry) { try { onRetry(attempt, delay, e.message || String(e)); } catch (_) {} }
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+
+  // 点击图片放大查看（灯箱）：批量准备缩略图、听写预览点击放大；结果卡片缩略图在卡片处理器里单独处理
+  function initImageLightbox() {
+    if (document.getElementById('imgLightbox')) return;
+    const box = document.createElement('div');
+    box.id = 'imgLightbox';
+    box.className = 'img-lightbox';
+    box.hidden = true;
+    box.innerHTML = '<img alt="预览"><span class="img-lightbox-hint">点击任意处或按 Esc 关闭</span>';
+    document.body.appendChild(box);
+    box.addEventListener('click', () => { box.hidden = true; });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') box.hidden = true; });
+    // 预览图点击放大（批量准备缩略图、听写预览）
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('img.prep-thumb, #dictPhotoPreview img');
+      if (t) openImageLightbox(t.src, t.alt);
+    });
+  }
+  function openImageLightbox(src, alt) {
+    initImageLightbox();
+    const box = document.getElementById('imgLightbox');
+    const img = box.querySelector('img');
+    img.src = src || '';
+    img.alt = alt || '';
+    box.hidden = false;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  // 进入批量准备：展示多张图片缩略图，逐张识别后可编辑
+  async function handleMultipleImages(files, dialog) {
+    const valid = files.filter(f => f.type.startsWith('image/'));
+    const oversized = valid.filter(f => f.size > 10 * 1024 * 1024);
+    if (oversized.length) toast(`有 ${oversized.length} 张图片超过 10MB，已跳过`, 'warning', 4000);
+    const imgs = valid.filter(f => f.size <= 10 * 1024 * 1024);
+    if (!imgs.length) return;
+
+    const uploadZone = dialog.querySelector('#uploadZone');
+    const ocrProgress = dialog.querySelector('#ocrProgress');
+    const prep = dialog.querySelector('#batchPrep');
+    const prepList = dialog.querySelector('#batchPrepList');
+    const prepCount = dialog.querySelector('#batchPrepCount');
+    const startBtn = dialog.querySelector('#batchStartBtn');
+    const submitBtn = dialog.querySelector('#submitGradeBtn');
+    if (uploadZone) uploadZone.hidden = true;
+    if (ocrProgress) ocrProgress.hidden = true;
+    prep.hidden = false;
+    if (submitBtn) submitBtn.hidden = true; // 单篇提交按钮在批量模式下隐藏
+    if (startBtn) startBtn.disabled = true;
+
+    batchPrepDialog = dialog;
+    batchPrepItems = imgs.map((file) => {
+      batchPrepSeq += 1;
+      return {
+        id: 'prep_' + Date.now() + '_' + batchPrepSeq,
+        file,
+        imageUrl: URL.createObjectURL(file),
+        text: '',
+        studentName: '',
+        status: 'ocr',
+        engine: null,
+        error: null,
+      };
+    });
+
+    prepList.innerHTML = '';
+    batchPrepItems.forEach(item => prepList.appendChild(renderBatchPrepCard(item)));
+    prepCount.textContent = `正在识别 ${batchPrepItems.length} 张图片…`;
+
+    await mapPool(batchPrepItems, BATCH_CONCURRENCY, async (item) => {
+      const cardText = prepList.querySelector(`[data-prep="${item.id}"] .prep-text`);
+      try {
+        const res = await ocrImageToText(item.file, () => {});
+        item.text = res.text;
+        item.engine = res.engine;
+        if (cardText) {
+          cardText.value = res.text;
+          cardText.readOnly = false;
+          cardText.classList.remove('is-loading');
+        }
+      } catch (e) {
+        item.error = e.message;
+        if (cardText) {
+          cardText.value = '识别失败：' + e.message;
+          cardText.readOnly = false;
+          cardText.classList.remove('is-loading');
+        }
+      }
+    });
+
+    prepCount.textContent = `已选择 ${batchPrepItems.length} 张图片（识别完成，可检查/修改）`;
+    if (startBtn) startBtn.disabled = batchPrepItems.length === 0;
+  }
+
+  // 在批量准备面板中追加更多图片（仅识别新增的几张，已识别的不重跑）
+  async function appendImagesToBatch(files, dialog) {
+    const valid = files.filter(f => f.type.startsWith('image/'));
+    const oversized = valid.filter(f => f.size > 10 * 1024 * 1024);
+    if (oversized.length) toast(`有 ${oversized.length} 张图片超过 10MB，已跳过`, 'warning', 4000);
+    const imgs = valid.filter(f => f.size <= 10 * 1024 * 1024);
+    if (!imgs.length) return;
+
+    const prepList = dialog.querySelector('#batchPrepList');
+    const prepCount = dialog.querySelector('#batchPrepCount');
+    const startBtn = dialog.querySelector('#batchStartBtn');
+    if (!prepList) return;
+
+    const newItems = imgs.map((file) => {
+      batchPrepSeq += 1;
+      return {
+        id: 'prep_' + Date.now() + '_' + batchPrepSeq,
+        file,
+        imageUrl: URL.createObjectURL(file),
+        text: '',
+        studentName: '',
+        status: 'ocr',
+        engine: null,
+        error: null,
+      };
+    });
+
+    newItems.forEach(item => prepList.appendChild(renderBatchPrepCard(item)));
+    batchPrepItems = batchPrepItems.concat(newItems);
+    const total = batchPrepItems.length;
+    const pending = newItems.length;
+    if (prepCount) prepCount.textContent = `已选择 ${total} 张图片（正在识别新增 ${pending} 张…）`;
+    if (startBtn) startBtn.disabled = true;
+
+    await mapPool(newItems, BATCH_CONCURRENCY, async (item) => {
+      const cardText = prepList.querySelector(`[data-prep="${item.id}"] .prep-text`);
+      try {
+        const res = await ocrImageToText(item.file, () => {});
+        item.text = res.text;
+        item.engine = res.engine;
+        if (cardText) {
+          cardText.value = res.text;
+          cardText.readOnly = false;
+          cardText.classList.remove('is-loading');
+        }
+      } catch (e) {
+        item.error = e.message;
+        if (cardText) {
+          cardText.value = '识别失败：' + e.message;
+          cardText.readOnly = false;
+          cardText.classList.remove('is-loading');
+        }
+      }
+    });
+
+    if (prepCount) prepCount.textContent = `已选择 ${batchPrepItems.length} 张图片（识别完成，可检查/修改）`;
+    if (startBtn) startBtn.disabled = batchPrepItems.length === 0;
+  }
+
+  function renderBatchPrepCard(item) {
+    const card = document.createElement('div');
+    card.className = 'prep-card';
+    card.dataset.prep = item.id;
+    card.innerHTML = `
+      <img class="prep-thumb" src="${item.imageUrl}" alt="作文图片">
+      <div class="prep-body">
+        <div class="prep-row">
+          <input type="text" class="prep-name form-input" placeholder="学生姓名（选填）" maxlength="40" value="${escapeHtml(item.studentName)}">
+          <button class="prep-remove btn btn-text" type="button" title="移除">✕</button>
+        </div>
+        <textarea class="prep-text is-loading" rows="3" readonly placeholder="识别中…">识别中…</textarea>
+      </div>`;
+    card.querySelector('.prep-remove').addEventListener('click', () => {
+      if (!batchPrepDialog) return;
+      const list = batchPrepDialog.querySelector('#batchPrepList');
+      if (!list) return;
+      batchPrepItems = batchPrepItems.filter(x => x.id !== item.id);
+      card.remove();
+      const c = batchPrepDialog.querySelector('#batchPrepCount');
+      if (c) c.textContent = `已选择 ${batchPrepItems.length} 张图片`;
+      const sb = batchPrepDialog.querySelector('#batchStartBtn');
+      if (sb) sb.disabled = batchPrepItems.length === 0;
+    });
+    card.querySelector('.prep-text').addEventListener('input', (e) => { item.text = e.target.value; });
+    card.querySelector('.prep-name').addEventListener('input', (e) => { item.studentName = e.target.value; });
+    return card;
+  }
+
+  async function startBatchFromDialog(dialog) {
+    const items = batchPrepItems.filter(it => it.text && it.text.trim().length >= 20);
+    const skipped = batchPrepItems.length - items.length;
+    if (!items.length) {
+      toast('没有可批改的作文（请确认图片已识别且不少于 20 字）', 'warning', 5000);
+      return;
+    }
+    if (skipped > 0) toast(`${skipped} 张因未识别或文字过短已跳过`, 'warning', 4000);
+    const settings = Storage.Settings.get();
+    if (!settings.apiKey) {
+      toast('请先在设置中填写 API Key', 'warning', 3000);
+      closeInputDialog();
+      setTimeout(openSettings, 200);
+      return;
+    }
+    Storage.Student.set(items[0].studentName || Storage.Student.get());
+    closeInputDialog();
+    await startBatchGrading(items, settings);
+  }
+
+  function buildGradedData(item, result, settings) {
+    const corrections = locateCorrections(item.text, result.corrections);
+    const maxScores = parseMaxScores(settings.rubric) || { _default: 100 };
+    const data = {
+      title: item.studentName ? item.studentName + ' 的作文' : '批量作文',
+      text: item.text,
+      corrections,
+      overall: result.overall,
+      scores: result.scores,
+      maxScores,
+      studentName: item.studentName || '',
+      imageUrl: item.imageUrl || null,
+    };
+    // 注意：批量批改不再逐篇写入历史，而是全部完成后作为一个「分组」一次性写入
+    // （见 startBatchGrading 末尾的 Storage.History.addBatch）。groupId/itemId 由那里回填。
+    return data;
+  }
+
+  async function startBatchGrading(items, settings) {
+    state.batch = { items: items.slice(), results: [], groupId: null };
+    showState('batch');
+    els.batchGrid.innerHTML = '';
+    showBatchProgress(0, items.length);
+
+    let done = 0;
+    const total = items.length;
+    await mapPool(items, BATCH_CONCURRENCY, async (item) => {
+      const placeholder = renderBatchCard(item, 'grading');
+      try {
+        const result = await withRetry(
+          () => AIGrader.grade(item.text, settings),
+          {
+            retries: 3,
+            onRetry: (attempt) => {
+              const st = placeholder.querySelector('.batch-card-status');
+              if (st) st.textContent = `限流重试中 (${attempt}/3)…`;
+            },
+          }
+        );
+        const data = buildGradedData(item, result, settings);
+        state.batch.results.push(data);
+        placeholder.remove();
+        renderBatchCard(Object.assign({}, item, { status: 'done', data }), 'done');
+      } catch (e) {
+        item.error = e.message;
+        placeholder.remove();
+        renderBatchCard(Object.assign({}, item, { status: 'error', error: e.message }), 'error');
+      } finally {
+        done++;
+        updateBatchProgress(done, total);
+      }
+    });
+
+    hideBatchProgress();
+    // 把本次批量批改的所有成功结果，合并成历史记录里的一个「分组」条目（点开目录再进单篇）
+    if (state.batch.results.length) {
+      const group = Storage.History.addBatch(
+        state.batch.results.map(d => ({
+          title: d.title, text: d.text, corrections: d.corrections,
+          overall: d.overall, scores: d.scores, studentName: d.studentName,
+          maxScores: d.maxScores, imageUrl: d.imageUrl || null,
+        }))
+      );
+      state.batch.results.forEach((d, i) => {
+        d.groupId = group.id;
+        d.itemId = group.items[i] ? group.items[i].id : null;
+      });
+      state.batch.groupId = group.id;
+    }
+    const ok = state.batch.results.length;
+    els.batchHint.textContent = `已批改 ${ok} 篇` +
+      (total - ok ? `，${total - ok} 篇失败` : '') +
+      '。点击任意卡片查看详细批改，或导出全部 PDF。';
+    els.batchExportBtn.disabled = ok === 0;
+    toast(`批量批改完成：${ok}/${total} 篇`, ok === total ? 'success' : 'warning');
+  }
+
+  function showBatchProgress(done, total) {
+    els.batchProgress.hidden = false;
+    updateBatchProgress(done, total);
+  }
+  function hideBatchProgress() {
+    els.batchProgress.hidden = true;
+  }
+  function updateBatchProgress(done, total) {
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    if (els.batchProgressFill) els.batchProgressFill.style.width = pct + '%';
+    if (els.batchProgressText) els.batchProgressText.textContent = `${done} / ${total} 完成`;
+  }
+
+  function renderBatchCard(item, status) {
+    const card = document.createElement('div');
+    card.className = 'batch-card status-' + status;
+    card.dataset.bid = item.id;
+
+    const scores = item.data ? item.data.scores : (item.scores || null);
+    const total = computeTotal(scores);
+    const words = item.text ? Renderer.countWords(item.text) : 0;
+    const thumb = item.imageUrl
+      ? `<img class="batch-card-thumb" src="${item.imageUrl}" alt="作文图片">`
+      : '<div class="batch-card-thumb batch-card-thumb--empty">无图</div>';
+    const name = (item.data && item.data.studentName) || item.studentName || '未命名';
+
+    let body = '';
+    if (status === 'grading') {
+      body = '<div class="batch-card-status">批改中…</div>';
+    } else if (status === 'done') {
+      body = `<div class="batch-card-score">${total != null ? total + ' 分' : '—'}</div>
+              <div class="batch-card-meta">${words} 词</div>
+              <button class="btn btn-text batch-edit" type="button" title="编辑原文与点评">✎ 编辑</button>`;
+    } else {
+      body = `<div class="batch-card-status err">失败：${escapeHtml((item.error || '').slice(0, 60))}</div>
+              <button class="btn btn-text batch-retry" type="button">重试</button>`;
+    }
+
+    card.innerHTML = `${thumb}
+      <div class="batch-card-body">
+        <div class="batch-card-name">${escapeHtml(name)}</div>
+        ${body}
+      </div>`;
+    card.addEventListener('click', (e) => {
+      if (e.target.classList.contains('batch-retry')) {
+        e.stopPropagation();
+        retryBatchItem(item);
+        return;
+      }
+      // 点击「✎ 编辑」→ 进入该篇单篇结果并自动开启编辑（原文 + 点评均可改）
+      if (e.target.classList.contains('batch-edit')) {
+        e.stopPropagation();
+        if (status === 'done' && item.data) openBatchEssay(item.data, { edit: true });
+        return;
+      }
+      // 点击缩略图 → 放大查看原图，不打开批改详情
+      if (e.target.classList.contains('batch-card-thumb')) {
+        openImageLightbox(item.imageUrl || (item.data && item.data.imageUrl), '作文图片');
+        return;
+      }
+      if (status === 'done' && item.data) openBatchEssay(item.data);
+    });
+    els.batchGrid.appendChild(card);
+    return card;
+  }
+
+  async function retryBatchItem(item) {
+    const settings = Storage.Settings.get();
+    if (!item.text || item.text.trim().length < 20) { toast('文字过短，无法重试', 'warning'); return; }
+    const card = els.batchGrid.querySelector(`[data-bid="${item.id}"]`);
+    if (card) {
+      card.className = 'batch-card status-grading';
+      card.innerHTML = '<div class="batch-card-status">批改中…</div>';
+    }
+    try {
+      const result = await withRetry(
+        () => AIGrader.grade(item.text, settings),
+        {
+          retries: 3,
+          onRetry: (attempt) => {
+            if (card) {
+              card.className = 'batch-card status-grading';
+              card.innerHTML = `<div class="batch-card-status">限流重试中 (${attempt}/3)…</div>`;
+            }
+          },
+        }
+      );
+      const data = buildGradedData(item, result, settings);
+      // 写回历史分组：把重试成功的新一篇追加进本次批量分组，并记录 groupId/itemId
+      const groupId = state.batch.groupId;
+      if (groupId) {
+        const added = Storage.History.addItemToGroup(groupId, {
+          title: data.title, text: data.text, corrections: data.corrections,
+          overall: data.overall, scores: data.scores, studentName: data.studentName,
+          maxScores: data.maxScores, imageUrl: data.imageUrl || null,
+        });
+        data.groupId = groupId;
+        data.itemId = added && added.id;
+      }
+      state.batch.results.push(data);
+      if (card) {
+        card.className = 'batch-card status-done';
+        card.dataset.bid = item.id;
+        const total = computeTotal(data.scores);
+        const words = Renderer.countWords(data.text);
+        card.innerHTML = `${item.imageUrl ? `<img class="batch-card-thumb" src="${item.imageUrl}" alt="">` : '<div class="batch-card-thumb batch-card-thumb--empty">无图</div>'}
+          <div class="batch-card-body">
+            <div class="batch-card-name">${escapeHtml(data.studentName || '未命名')}</div>
+            <div class="batch-card-score">${total != null ? total + ' 分' : '—'}</div>
+            <div class="batch-card-meta">${words} 词</div>
+            <button class="btn btn-text batch-edit" type="button" title="编辑原文与点评">✎ 编辑</button>
+          </div>`;
+        card.onclick = (e) => {
+          if (e.target.classList.contains('batch-edit')) { e.stopPropagation(); openBatchEssay(data, { edit: true }); return; }
+          if (e.target.classList.contains('batch-card-thumb')) { openImageLightbox(item.imageUrl || data.imageUrl, '作文图片'); return; }
+          openBatchEssay(data);
+        };
+      }
+    } catch (e) {
+      if (card) {
+        card.className = 'batch-card status-error';
+        card.innerHTML = `<div class="batch-card-body"><div class="batch-card-status err">失败：${escapeHtml((e.message || '').slice(0, 60))}</div><button class="btn btn-text batch-retry" type="button">重试</button></div>`;
+      }
+    }
+  }
+
+  function openBatchEssay(data, opts) {
+    state.fromBatch = true;
+    state.currentEssay = data;
+    state.currentHistoryId = data.groupId || data.historyId || null;
+    state.currentItemId = data.itemId || null;
+    Storage.Current.set(data);
+    Renderer.render(data);
+    showState('result');
+    // 从批量卡片点「✎ 编辑」进入时，自动开启编辑模式（原文 + 点评均可直接改）
+    if (opts && opts.edit && !state.annotationEditing) {
+      toggleAnnotationEditing();
+    }
+  }
+
+  async function exportBatchPDF() {
+    const results = state.batch.results;
+    if (!results.length) { toast('暂无可导出的结果', 'warning'); return; }
+    const printAll = els.printAll;
+    printAll.innerHTML = '';
+    for (const data of results) {
+      Renderer.render(data); // 把该篇渲染进全局 #essayResult
+      // 复制已渲染的内容到干净的 article：避免克隆带来的 hidden 属性与重复 id 导致打印空白
+      const article = document.createElement('article');
+      article.className = 'essay-result print-batch-item';
+      article.innerHTML = els.essayResult.innerHTML;
+      const titleEl = document.createElement('h2');
+      titleEl.className = 'print-doc-title';
+      titleEl.textContent = data.title || '英语作文批改';
+      article.insertBefore(titleEl, article.firstChild);
+      const wrap = document.createElement('div');
+      wrap.className = 'print-all-item';
+      wrap.appendChild(article);
+      printAll.appendChild(wrap);
+    }
+    printAll.hidden = false;
+    document.body.classList.add('exporting-all'); // 仅打印合并副本，隐藏原位结果
+    // 等两帧让浏览器完成新插入内容的布局与样式计算，否则部分浏览器会打印到空白
+    await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+    void printAll.offsetHeight; // 强制触发一次重排，确保打印引擎拿到最终尺寸
+    window.print();
+    setTimeout(() => {
+      printAll.hidden = true;
+      printAll.innerHTML = '';
+      document.body.classList.remove('exporting-all');
+    }, 800);
+  }
+
   /**
    * 在文本中定位 AI 返回的每个错误的字符位置
    */
@@ -974,6 +1538,10 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     const overallEl = document.getElementById('overallContent');
     if (overallEl) overallEl.setAttribute('contenteditable', state.annotationEditing ? 'true' : 'false');
 
+    // 原文：编辑模式下可直接改（老师修正作文正文）
+    const essayTextEl = document.getElementById('essayText');
+    if (essayTextEl) essayTextEl.setAttribute('contenteditable', state.annotationEditing ? 'true' : 'false');
+
     // 评分卡：数字 ↔ 输入框（总分除外，总分按平均自动计算、只读）
     document.querySelectorAll('#scoreCards .score-value[data-score-key]').forEach(valEl => {
       const key = valEl.dataset.scoreKey;
@@ -1030,6 +1598,9 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     // 总评（编辑模式下可改）
     const overallEl = document.getElementById('overallContent');
     if (overallEl) state.currentEssay.overall = overallEl.innerText.replace(/\n+$/, '');
+    // 原文（编辑模式下可改）
+    const essayTextEl = document.getElementById('essayText');
+    if (essayTextEl) state.currentEssay.text = essayTextEl.innerText.replace(/\n+$/, '');
   }
 
   // 把评分输入框的值同步回 state（0-100 钳制）
@@ -1253,14 +1824,21 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   function persistEdits() {
     if (!state.currentEssay) return;
     Storage.Current.set(state.currentEssay);
-    // 同步更新对应的历史记录，使编辑（批注 / 总评 / 分数）在「从历史加载」后依然保留
-    if (state.currentHistoryId) {
-      Storage.History.update(state.currentHistoryId, {
-        corrections: state.currentEssay.corrections,
-        overall: state.currentEssay.overall,
-        scores: state.currentEssay.scores,
-        studentName: state.currentEssay.studentName || '',
-      });
+    const patch = {
+      corrections: state.currentEssay.corrections,
+      overall: state.currentEssay.overall,
+      scores: state.currentEssay.scores,
+      studentName: state.currentEssay.studentName || '',
+      text: state.currentEssay.text || '',
+    };
+    // 若来自批量分组 → 写回组内对应子记录；否则写回单条历史
+    if (state.currentItemId) {
+      Storage.History.updateItem(state.currentHistoryId, state.currentItemId, patch);
+      // 同步更新内存中的批量结果（修复「编辑后立刻导出全部仍是旧版」）
+      const d = state.batch.results.find(r => r.itemId === state.currentItemId);
+      if (d) Object.assign(d, patch);
+    } else if (state.currentHistoryId) {
+      Storage.History.update(state.currentHistoryId, patch);
     }
   }
 
@@ -1370,25 +1948,65 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
     if (els.historyEmpty) els.historyEmpty.hidden = true;
     list.innerHTML = records.map(r => {
-      const wc = Renderer.countWords(r.text || '');
-      const total = (r.scores && r.scores.total != null) ? r.scores.total : '--';
-      const name = r.studentName ? ` · ${Renderer.escapeHtml(r.studentName)}` : '';
-      return `
-        <div class="history-item" data-id="${r.id}">
-          <div class="history-item-main" data-action="load">
-            <div class="history-item-title">${Renderer.escapeHtml(r.title || '未命名作文')}${name}</div>
-            <div class="history-item-meta">${formatHistoryDate(r.createdAt)} · ${wc} 词 · 总分 ${total}</div>
-          </div>
-          <div class="history-item-actions">
-            <button class="history-btn" data-action="rename" data-id="${r.id}" title="重命名">✎</button>
-            <button class="history-btn history-btn-del" data-action="delete" data-id="${r.id}" title="删除">🗑</button>
-          </div>
-        </div>`;
+      if (r.type === 'batch') return renderHistoryGroupHTML(r);
+      return renderHistoryItemHTML(r);
     }).join('');
   }
 
-  function loadHistoryRecord(id) {
-    const record = Storage.History.get(id);
+  function renderHistoryItemHTML(r) {
+    const wc = Renderer.countWords(r.text || '');
+    const total = (r.scores && r.scores.total != null) ? r.scores.total : '--';
+    const name = r.studentName ? ` · ${Renderer.escapeHtml(r.studentName)}` : '';
+    return `
+      <div class="history-item" data-id="${r.id}">
+        <div class="history-item-main" data-action="load">
+          <div class="history-item-title">${Renderer.escapeHtml(r.title || '未命名作文')}${name}</div>
+          <div class="history-item-meta">${formatHistoryDate(r.createdAt)} · ${wc} 词 · 总分 ${total}</div>
+        </div>
+        <div class="history-item-actions">
+          <button class="history-btn" data-action="rename" data-id="${r.id}" title="重命名">✎</button>
+          <button class="history-btn history-btn-del" data-action="delete" data-id="${r.id}" title="删除">🗑</button>
+        </div>
+      </div>`;
+  }
+
+  function renderHistoryGroupHTML(r) {
+    const items = r.items || [];
+    const subs = items.map(it => {
+      const wc = Renderer.countWords(it.text || '');
+      const total = (it.scores && it.scores.total != null) ? it.scores.total : '--';
+      const name = it.studentName ? ` · ${Renderer.escapeHtml(it.studentName)}` : '';
+      return `
+        <div class="history-sub-item" data-id="${r.id}" data-item-id="${it.id}">
+          <div class="history-sub-main" data-action="load">
+            <div class="history-sub-title">${Renderer.escapeHtml(it.title || '未命名作文')}${name}</div>
+            <div class="history-sub-meta">${wc} 词 · 总分 ${total}</div>
+          </div>
+          <div class="history-sub-actions">
+            <button class="history-btn" data-action="rename" data-id="${r.id}" data-item-id="${it.id}" title="重命名">✎</button>
+            <button class="history-btn history-btn-del" data-action="delete" data-id="${r.id}" data-item-id="${it.id}" title="删除">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="history-item history-group" data-id="${r.id}" data-type="batch">
+        <div class="history-group-head">
+          <div class="history-item-main" data-action="toggle">
+            <div class="history-item-title">📁 ${Renderer.escapeHtml(r.title || '批量批改')}<span class="history-group-badge">${items.length} 篇</span></div>
+            <div class="history-item-meta">${formatHistoryDate(r.createdAt)} · 点击展开查看每篇</div>
+          </div>
+          <div class="history-item-actions">
+            <button class="history-btn" data-action="rename" data-id="${r.id}" title="重命名分组">✎</button>
+            <button class="history-btn history-btn-del" data-action="delete" data-id="${r.id}" title="删除分组">🗑</button>
+          </div>
+        </div>
+        <div class="history-group-items" hidden>${subs}</div>
+      </div>`;
+  }
+
+  function loadHistoryRecord(id, itemId) {
+    // itemId 存在 → 加载批量分组内的某篇；否则加载单条历史
+    const record = itemId ? Storage.History.getItem(id, itemId) : Storage.History.get(id);
     if (!record) {
       toast('记录不存在或已被删除', 'warning');
       renderHistoryPanel();
@@ -1396,6 +2014,8 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
     state.currentEssay = record;
     state.currentHistoryId = id;
+    state.currentItemId = itemId || null;
+    state.fromBatch = false; // 从历史加载的单篇，返回时回主页（而非批量列表）
     Storage.Current.set(record);
     Renderer.render(record);
     showState('result');
@@ -1428,6 +2048,40 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       danger: true,
       onConfirm: () => {
         Storage.History.remove(id);
+        renderHistoryPanel();
+      },
+    });
+  }
+
+  // 批量分组内：重命名某篇
+  function renameHistoryItem(groupId, itemId) {
+    const record = Storage.History.getItem(groupId, itemId);
+    if (!record) return;
+    openPromptDialog({
+      title: '重命名作文',
+      value: record.title || '',
+      placeholder: '给这篇作文起个名字',
+      onConfirm: (newTitle) => {
+        if (!newTitle) {
+          toast('名称不能为空', 'warning');
+          return;
+        }
+        Storage.History.renameItem(groupId, itemId, newTitle);
+        renderHistoryPanel();
+        toast('已重命名', 'success', 1500);
+      },
+    });
+  }
+
+  // 批量分组内：删除某篇（组内清空则整组删除）
+  function deleteHistoryItem(groupId, itemId) {
+    openConfirmDialog({
+      title: '删除作文',
+      message: '确定从该分组删除这篇作文吗？此操作不可撤销。',
+      confirmText: '删除',
+      danger: true,
+      onConfirm: () => {
+        Storage.History.removeItem(groupId, itemId);
         renderHistoryPanel();
       },
     });
@@ -1480,6 +2134,12 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   function bindEvents() {
     // 返回
     els.backBtn.addEventListener('click', () => {
+      // 从批量列表点开的单篇：返回批量列表
+      if (state.fromBatch) {
+        state.fromBatch = false;
+        showState('batch');
+        return;
+      }
       // 在单词听写：回到作文批改主页
       if (els.dictationView && !els.dictationView.hidden) {
         els.tabDictation.classList.remove('active');
@@ -1497,6 +2157,17 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         Storage.Current.clear();
       }
     });
+
+    // 批量结果：返回主页 / 导出全部 PDF
+    if (els.batchBackBtn) {
+      els.batchBackBtn.addEventListener('click', () => {
+        state.fromBatch = false;
+        showState('empty');
+      });
+    }
+    if (els.batchExportBtn) {
+      els.batchExportBtn.addEventListener('click', exportBatchPDF);
+    }
 
     // 顶部功能切换：作文批改 / 单词听写
     els.tabGrade.addEventListener('click', () => {
@@ -1573,21 +2244,41 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     // 底部操作
     els.shareBtn.addEventListener('click', doShare);
 
-    // 历史记录面板：点击加载 / 重命名 / 删除（事件委托）
+    // 历史记录面板：点击加载 / 重命名 / 删除 / 展开分组（事件委托）
     if (els.historyList) {
       els.historyList.addEventListener('click', (e) => {
-        const item = e.target.closest('.history-item');
-        if (!item) return;
-        const id = item.dataset.id;
+        // 1) 操作按钮（支持组级与组内子条目级，用 data-item-id 区分）
         const btn = e.target.closest('.history-btn');
         if (btn) {
           e.stopPropagation();
           const action = btn.dataset.action;
-          if (action === 'rename') renameHistory(id);
-          else if (action === 'delete') deleteHistory(id);
+          const id = btn.dataset.id;
+          const itemId = btn.dataset.itemId;
+          if (itemId) {
+            if (action === 'rename') renameHistoryItem(id, itemId);
+            else if (action === 'delete') deleteHistoryItem(id, itemId);
+          } else {
+            if (action === 'rename') renameHistory(id);
+            else if (action === 'delete') deleteHistory(id);
+          }
           return;
         }
-        loadHistoryRecord(id);
+        // 2) 组内子条目主区域 → 加载该篇单独批改
+        const sub = e.target.closest('.history-sub-item');
+        if (sub) {
+          loadHistoryRecord(sub.dataset.id, sub.dataset.itemId);
+          return;
+        }
+        // 3) 分组头部 → 展开 / 收起组内列表
+        const group = e.target.closest('.history-group');
+        if (group) {
+          const items = group.querySelector('.history-group-items');
+          if (items) items.hidden = !items.hidden;
+          return;
+        }
+        // 4) 普通单篇 → 加载
+        const item = e.target.closest('.history-item');
+        if (item) loadHistoryRecord(item.dataset.id);
       });
     }
     const clearBtn = $('clearHistoryBtn');
@@ -2104,6 +2795,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
 
   function init() {
     bindEvents();
+    initImageLightbox(); // 注册图片灯箱（点击缩略图放大）的全局点击委托
     initDictation();
     initSelectionAnnotation();
     initSplitter();

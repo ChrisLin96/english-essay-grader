@@ -14,7 +14,7 @@
 | 维度 | 说明 |
 |------|------|
 | 技术栈 | HTML + CSS + 原生 JS（Vanilla，无框架），`js/app.js` 顶层 IIFE 包裹，**不可拆文件** |
-| 核心功能 | ① 作文 AI 批改：红圈标注错误 + 中文批注 + 总评评分；② 单词听写：拍照/多选/手动输入 + AI 朗读 |
+| 核心功能 | ① 作文 AI 批改：红圈标注错误 + 中文批注 + 总评评分；② 单词听写：拍照/多选/手动输入 + AI 朗读；③ 批量批改：多图上传 → AI 并发处理多篇作文 → 概览卡片列表 + 逐篇点开 |
 | AI 批改 | OpenAI 兼容 API（通义/智谱/DeepSeek 等）+ Google Gemini（免费层） |
 | 图片/OCR | Tesseract.js 浏览器端识别；支持视觉的服务商可 AI 直接看图识字 |
 | 导出 | 浏览器原生打印 → 矢量 PDF（仅 PDF，已删除图片导出） |
@@ -64,6 +64,10 @@
 
 12. **移动端用页面内对话框替代 `window.prompt/confirm`**
     微信 WebView 会禁用原生 prompt/confirm，重命名/删除历史已改用 `openPromptDialog` / `openConfirmDialog`。保持。
+
+### 批量批改模块
+15. **多图上传 → 并发处理多篇**
+    选 ≥2 张图进入「批量准备」面板（逐张 OCR 后可改文字/填学生名）；「开始批量批改」用 `mapPool` 并发 3 篇调 `AIGrader.grade`；结果以 `#batchGrid` 卡片概览（分数/失败可重试），点卡片复用单篇左右对照报告（`openBatchEssay`，可编辑/导出）；「导出全部 PDF」合并打印。`showState('batch')` 为独立视图。**不要把多图流程拆回单篇逐个操作。**
 
 ### 部署与推送
 13. **GitHub 推送走本地连接器代理 MCP**

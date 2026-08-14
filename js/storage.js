@@ -94,6 +94,77 @@ const Storage = (() => {
     clear() {
       remove(KEYS.HISTORY);
     },
+
+    // ---- 批量批改分组：一次批改的多篇作文在历史里合并为一个「目录」条目 ----
+    genId(prefix) {
+      return prefix + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    },
+    // 新增一个批量分组记录（items 为各篇完整批改数据），返回 group 对象
+    addBatch(items) {
+      const list = History.list();
+      const group = {
+        id: History.genId('g_'),
+        type: 'batch',
+        createdAt: Date.now(),
+        title: '批量批改',
+        items: (items || []).map((it, i) => Object.assign({
+          id: History.genId('i_') + '_' + i,
+        }, it)),
+      };
+      list.unshift(group);
+      if (list.length > 30) list.length = 30;
+      set(KEYS.HISTORY, list);
+      return group;
+    },
+    // 获取组内某篇子记录
+    getItem(groupId, itemId) {
+      const g = History.get(groupId);
+      if (!g || !g.items) return null;
+      return g.items.find(it => it.id === itemId) || null;
+    },
+    // 向分组追加一篇（用于批量中某篇失败后手动重试成功）
+    addItemToGroup(groupId, itemData) {
+      const list = History.list();
+      let added = null;
+      const next = list.map(r => {
+        if (r.id !== groupId) return r;
+        const item = Object.assign({ id: History.genId('i_') }, itemData);
+        added = item;
+        return { ...r, items: (r.items || []).concat(item) };
+      });
+      set(KEYS.HISTORY, next);
+      return added;
+    },
+    // 更新组内某篇子记录（用于编辑写回）
+    updateItem(groupId, itemId, patch) {
+      const list = History.list();
+      let updated = null;
+      const next = list.map(r => {
+        if (r.id !== groupId) return r;
+        const items = (r.items || []).map(it => it.id === itemId ? { ...it, ...patch } : it);
+        return { ...r, items };
+      });
+      set(KEYS.HISTORY, next);
+      const g = next.find(r => r.id === groupId);
+      if (g) updated = g.items.find(it => it.id === itemId) || null;
+      return updated;
+    },
+    // 重命名组内某篇子记录
+    renameItem(groupId, itemId, title) {
+      return History.updateItem(groupId, itemId, { title });
+    },
+    // 删除组内某篇子记录；若组内清空则连同组一起删除
+    removeItem(groupId, itemId) {
+      const list = History.list();
+      const next = [];
+      for (const r of list) {
+        if (r.id !== groupId) { next.push(r); continue; }
+        const items = (r.items || []).filter(it => it.id !== itemId);
+        if (items.length) next.push({ ...r, items });
+        // items 为空 → 丢弃整个组
+      }
+      set(KEYS.HISTORY, next);
+    },
   };
 
   // 学生姓名（最近一次输入的名字，方便下次自动填入）
