@@ -45,7 +45,11 @@ const AIGrader = (() => {
       keyUrl: 'https://dashscope.console.aliyun.com/apiKey',
       keyPrefix: 'sk-',
       free: false,
-      note: '国内稳定，免费额度较多。默认使用 qwen-vl-max（支持图片识别）。',
+      tts: true,
+      ttsStyle: 'dashscope',            // 走 DashScope 专属 CosyVoice / Qwen-Audio-TTS 接口，非 OpenAI 格式
+      ttsModel: 'qwen-audio-3.0-tts-flash',
+      ttsVoice: 'longanhuan_v3.6',
+      note: '国内稳定，免费额度较多。默认使用 qwen-vl-max（支持图片识别），并支持 AI 语音合成（CosyVoice / Qwen-Audio-TTS，听写默认即用自然语音）。',
     },
     moonshot: {
       name: 'Moonshot 月之暗面（Kimi）',
@@ -128,7 +132,11 @@ const AIGrader = (() => {
       keyUrl: 'https://platform.openai.com/api-keys',
       keyPrefix: 'sk-',
       free: false,
-      note: '效果最好但成本较高。默认使用 gpt-4o-mini（支持图片识别）。',
+      tts: true,
+      ttsStyle: 'openai',
+      ttsModel: 'tts-1',
+      ttsVoice: 'alloy',
+      note: '效果最好但成本较高。默认使用 gpt-4o-mini（支持图片识别），并支持 AI 语音合成（TTS）。',
     },
     custom: {
       name: '自定义',
@@ -139,7 +147,11 @@ const AIGrader = (() => {
       keyUrl: '',
       keyPrefix: '',
       free: false,
-      note: '填写 OpenAI 兼容协议的 Base URL；默认使用 gpt-4o-mini（支持图片识别），可在 ai-grader.js 调整。',
+      tts: true,
+      ttsStyle: 'openai',
+      ttsModel: 'tts-1',
+      ttsVoice: 'alloy',
+      note: '填写 OpenAI 兼容协议的 Base URL；默认使用 gpt-4o-mini（支持图片识别），可在 ai-grader.js 调整。若网关代理了 /v1/audio/speech 即可用于 AI 朗读。',
     },
   };
 
@@ -414,6 +426,47 @@ ${text}
     return await callOpenAICompatibleVision(prompt, merged, dataUrl);
   }
 
+  /**
+   * 多模态大模型识别图片中的「单词 / 句子」，专为单词听写设计。
+   * 与 recognizeImage（返回整段文本）不同：这里要求 AI 把每个单词/句子单独成行输出，
+   * 方便直接作为听写条目（每行一条）。支持中英文，自动按图片顺序编号输出。
+   * @param {string} dataUrl - 图片 dataURL（含 base64）
+   * @param {Object} settings - { provider, apiKey, baseUrl }
+   * @returns {Promise<string>} 每行一个单词/句子的多行文本
+   */
+  async function recognizeDictationItems(dataUrl, settings) {
+    const resolved = resolveSettings(settings);
+    if (!resolved.apiKey) {
+      throw new Error('未配置 API Key：请先在「设置」中填写你自己的 Key');
+    }
+    const providerConfig = getProviderConfig(resolved.provider);
+    // 纯文本服务商（如 DeepSeek）的 API 看不到图片，明确报错，由上层回退本地 OCR。
+    if (providerConfig.vision === false) {
+      throw new Error(`所选服务商「${providerConfig.name}」的 API 仅支持文字、不支持图片识别。请改用通义千问、智谱、硅基流动、Gemini 等支持视觉的服务商，或继续使用本地 OCR 兜底。`);
+    }
+    const merged = {
+      ...resolved,
+      provider: providerConfig.type,
+      providerId: resolved.provider,
+      baseUrl: resolved.baseUrl || providerConfig.baseUrl,
+      model: providerConfig.visionModel || providerConfig.model,
+    };
+    const mime = (dataUrl.match(/^data:([^;]+);base64,/) || [])[1] || 'image/jpeg';
+    const b64 = dataUrl.split(',')[1] || '';
+
+    const prompt = '请识别这张图片中的单词或句子，用于制作「单词听写」词表。要求：\n' +
+      '1. 支持中文和英文：中文按词语或短句识别，英文按单词或句子识别；\n' +
+      '2. 每个单词或句子【单独占一行】，按图片中出现的先后顺序逐行输出；\n' +
+      '3. 不要加序号、不要加编号、不要加任何解释或标点修饰；\n' +
+      '4. 若一行内有多个由标点或换行分隔的独立词，请拆成独立行；但保持固定搭配/短语完整（如 "in front of" 不要拆开）；\n' +
+      '5. 仅输出这些行，其它内容一律不要。';
+
+    if (merged.provider === 'gemini') {
+      return await callGeminiVision(prompt, merged, mime, b64);
+    }
+    return await callOpenAICompatibleVision(prompt, merged, dataUrl);
+  }
+
   async function callGeminiVision(prompt, settings, mime, b64) {
     const model = settings.model || 'gemini-1.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.apiKey}`;
@@ -505,6 +558,128 @@ ${text}
   }
 
   /**
+   * 判断当前服务商是否支持 AI 语音合成（TTS）。
+   * 仅显式声明 tts:true 的服务商可用（如 OpenAI、自定义网关、通义千问）。
+   * @param {string} providerId
+   * @returns {boolean}
+   */
+  function supportsTTS(providerId) {
+    const cfg = getProviderConfig(providerId);
+    return !!(cfg && cfg.tts);
+  }
+
+  /**
+   * AI 语音合成（TTS）：根据服务商走不同接口，把文字转成语音音频，
+   * 返回可直接给 <audio> 播放的 dataURL（或 DashScope 返回的临时音频 URL）。
+   * - ttsStyle==='openai'：OpenAI 兼容 /v1/audio/speech（OpenAI、自定义网关）
+   * - ttsStyle==='dashscope'：通义千问 DashScope SpeechSynthesizer（CosyVoice / Qwen-Audio-TTS）
+   * 不支持的服务商由上层回退浏览器朗读。
+   * @param {string} text - 要朗读的文字（中英文均可）
+   * @param {Object} settings - { provider, apiKey, baseUrl?, speed? }
+   * @returns {Promise<string>} 音频 dataURL 或 URL
+   */
+  async function textToSpeech(text, settings) {
+    if (!text || !text.trim()) throw new Error('待朗读文本为空');
+    const providerConfig = getProviderConfig(settings.provider);
+    if (!providerConfig.tts) {
+      throw new Error(`所选服务商「${providerConfig.name}」暂不支持 AI 语音合成。请改用浏览器朗读，或换成支持 TTS 的服务商。`);
+    }
+    const apiKey = (settings.apiKey || '').trim();
+    if (!apiKey) throw new Error('未配置 API Key：请先在「设置」中填写你自己的 Key');
+    if (providerConfig.ttsStyle === 'dashscope') {
+      return await dashscopeTTS(text, settings, providerConfig);
+    }
+    // 默认：OpenAI 兼容 /v1/audio/speech
+    const baseUrl = (settings.baseUrl || providerConfig.baseUrl).replace(/\/$/, '');
+    const url = `${baseUrl}/audio/speech`;
+    const body = {
+      model: providerConfig.ttsModel || 'tts-1',
+      voice: providerConfig.ttsVoice || 'alloy',
+      input: text,
+      response_format: 'mp3',
+    };
+    if (settings.speed && !isNaN(settings.speed)) {
+      body.speed = Math.max(0.25, Math.min(4.0, settings.speed));
+    }
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const j = await res.json();
+        msg = j.error?.message || msg;
+      } catch (e) { /* ignore */ }
+      throw new Error('AI 语音合成失败：' + msg);
+    }
+    const blob = await res.blob();
+    return await blobToDataURL(blob);
+  }
+
+  /**
+   * 通义千问 DashScope 语音合成（CosyVoice / Qwen-Audio-TTS）。
+   * 接口：POST https://dashscope.aliyuncs.com/api/v1/services/audio/tts/SpeechSynthesizer
+   * 返回音频可能为 base64（audio.data）或临时链接（audio.url），二者都兼容。
+   */
+  async function dashscopeTTS(text, settings, cfg) {
+    const apiKey = (settings.apiKey || '').trim();
+    if (!apiKey) throw new Error('未配置 API Key');
+    const url = 'https://dashscope.aliyuncs.com/api/v1/services/audio/tts/SpeechSynthesizer';
+    const body = {
+      model: cfg.ttsModel || 'qwen-audio-3.0-tts-flash',
+      input: {
+        text,
+        voice: cfg.ttsVoice || 'longanhuan_v3.6',
+        format: 'mp3',
+        sample_rate: 24000,
+      },
+    };
+    if (settings.speed && !isNaN(settings.speed)) {
+      body.input.rate = Math.max(0.5, Math.min(2.0, settings.speed));
+    }
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const j = await res.json();
+        msg = j.message || j.code || JSON.stringify(j);
+      } catch (e) { /* ignore */ }
+      throw new Error('通义语音合成失败：' + msg);
+    }
+    const data = await res.json();
+    const audio = data.output && data.output.audio;
+    if (!audio) throw new Error('通义语音合成返回异常：' + JSON.stringify(data).slice(0, 300));
+    // 优先用内联 base64；否则用临时链接（尝试转 dataURL 以便缓存，跨域失败则直接用链接播放）
+    if (audio.data && audio.data.length) {
+      return 'data:audio/mp3;base64,' + audio.data;
+    }
+    if (audio.url) {
+      try {
+        const blob = await fetch(audio.url).then(r => r.blob());
+        return await blobToDataURL(blob);
+      } catch (e) {
+        return audio.url;
+      }
+    }
+    throw new Error('通义语音合成未返回音频数据');
+  }
+
+  function blobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('音频读取失败'));
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  /**
    * 解析 AI 返回的结果
    * 处理可能的 markdown 代码块包裹
    * @param {string} raw - AI 返回的原始文本
@@ -591,7 +766,7 @@ ${text}
     return { success: true, sample: result.slice(0, 100) };
   }
 
-  return { grade, testConnection, getProviderConfig, getProviders, recognizeImage };
+  return { grade, testConnection, getProviderConfig, getProviders, recognizeImage, recognizeDictationItems, supportsTTS, textToSpeech };
 })();
 
 window.AIGrader = AIGrader;

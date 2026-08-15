@@ -252,6 +252,10 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     helpModal: $('helpModal'),
     rubricModal: $('rubricModal'),
     rubricStandardBtn: $('rubricStandardBtn'),
+    tabBar: $('tabBar'),
+    tabGrade: $('tabGrade'),
+    tabDictation: $('tabDictation'),
+    dictationView: $('dictationView'),
   };
 
   // ===========================
@@ -280,9 +284,12 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     els.homeLayout.hidden = name !== 'empty';
     els.essayResult.hidden = name !== 'result';
     els.loadingState.hidden = name !== 'loading';
+    els.dictationView.hidden = name !== 'dictation';
     els.batchResult.hidden = name !== 'batch';
     els.appFooter.hidden = name !== 'result';
     els.fab.hidden = name !== 'result';
+    // 顶部功能切换栏：在「主页 / 单词听写」显示，批改结果等专注视图隐藏
+    els.tabBar.hidden = !(name === 'empty' || name === 'dictation');
     // 进入主页时刷新历史记录面板
     if (name === 'empty') renderHistoryPanel();
     if (name === 'batch') state.fromBatch = true;
@@ -975,7 +982,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
   }
 
-  // 点击图片放大查看（灯箱）：批量准备缩略图点击放大；结果卡片缩略图在卡片处理器里单独处理
+  // 点击图片放大查看（灯箱）：批量准备缩略图、听写预览点击放大；结果卡片缩略图在卡片处理器里单独处理
   function initImageLightbox() {
     if (document.getElementById('imgLightbox')) return;
     const box = document.createElement('div');
@@ -986,9 +993,9 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     document.body.appendChild(box);
     box.addEventListener('click', () => { box.hidden = true; });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') box.hidden = true; });
-    // 预览图点击放大（批量准备缩略图）
+    // 预览图点击放大（批量准备缩略图、听写预览）
     document.addEventListener('click', (e) => {
-      const t = e.target.closest('img.prep-thumb');
+      const t = e.target.closest('img.prep-thumb, #dictPhotoPreview img');
       if (t) openImageLightbox(t.src, t.alt);
     });
   }
@@ -2139,6 +2146,14 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         showState('batch');
         return;
       }
+      // 在单词听写：回到作文批改主页
+      if (els.dictationView && !els.dictationView.hidden) {
+        els.tabDictation.classList.remove('active');
+        els.tabGrade.classList.add('active');
+        if (dict.playing) stopDictation();
+        showState('empty');
+        return;
+      }
       if (els.essayResult.hidden) {
         // 在空状态
         return;
@@ -2159,6 +2174,19 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     if (els.batchExportBtn) {
       els.batchExportBtn.addEventListener('click', exportBatchPDF);
     }
+
+    // 顶部功能切换：作文批改 / 单词听写
+    els.tabGrade.addEventListener('click', () => {
+      els.tabGrade.classList.add('active');
+      els.tabDictation.classList.remove('active');
+      if (dict.playing) stopDictation();
+      showState('empty');
+    });
+    els.tabDictation.addEventListener('click', () => {
+      els.tabDictation.classList.add('active');
+      els.tabGrade.classList.remove('active');
+      showState('dictation');
+    });
 
     // 设置
     els.settingsBtn.addEventListener('click', openSettings);
@@ -2353,11 +2381,429 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
   // ===========================
   // 启动
   // ===========================
+  // ===========================
+  // 单词听写 / 跟读练习（Web Speech API 朗读 + Tesseract 拍照取词）
+  // ===========================
+  const dict = {
+    items: [],
+    index: 0,
+    playing: false,
+    paused: false,
+    gapWaiting: false,  // 处于「间隔等待下一句」且被暂停
+    timer: null,
+    lang: 'auto',
+    interval: 1.5,   // 秒
+    rate: 1,
+    useAiTts: true,  // AI 朗读默认开启（按钮已隐藏，无需用户切换）；不可用时自动回退浏览器
+  };
+  let dictVoices = [];   // 缓存语音列表，避免首次 speak 因 voices 未加载而静默失败
+  let dictAudio = null;  // 当前正在播放的 AI TTS <audio> 元素
+  const dictAudioCache = new Map();  // 文本 → 音频 dataURL，避免重复请求
+  const AI_TTS_KEY = 'eg_dict_useAiTts';
+
+  function initDictation() {
+    const $d = (id) => document.getElementById(id);
+    const textEl = $d('dictText');
+    const countEl = $d('dictCount');
+    const langEl = $d('dictLang');
+    const intervalEl = $d('dictInterval');
+    const intervalVal = $d('dictIntervalVal');
+    const rateEl = $d('dictRate');
+    const rateVal = $d('dictRateVal');
+    const photoBox = $d('dictPhotoBox');
+    const cameraBtn = $d('dictPhotoCameraBtn');
+    const cameraInput = $d('dictPhotoCameraInput');
+    const fileBtn = $d('dictPhotoFileBtn');
+    const fileInput = $d('dictPhotoFileInput');
+    const photoName = $d('dictPhotoName');
+    const photoPreview = $d('dictPhotoPreview');
+    const clearBtn = $d('dictClearBtn');
+
+    // 输入方式切换：手动 / 拍照
+    function setDictInput(mode) {
+      document.querySelectorAll('.dictab').forEach(x => x.classList.toggle('active', x.dataset.input === mode));
+      textEl.hidden = mode !== 'manual';
+      photoBox.hidden = mode !== 'photo';
+    }
+    document.querySelectorAll('.dictab').forEach(b => {
+      b.addEventListener('click', () => setDictInput(b.dataset.input));
+    });
+    setDictInput('photo'); // 默认进入「拍照 / 上传」标签（已与手动标签对调位置）
+
+    // 文本输入：实时统计条数
+    textEl.addEventListener('input', () => {
+      countEl.textContent = parseDictationItems(textEl.value).length + ' 条';
+      if (dict.playing) stopDictation();
+    });
+
+    // 设置：语言 / 间隔 / 语速
+    langEl.addEventListener('change', () => { dict.lang = langEl.value; });
+    intervalEl.addEventListener('input', () => {
+      dict.interval = parseFloat(intervalEl.value);
+      intervalVal.textContent = dict.interval.toFixed(1) + ' 秒';
+    });
+    rateEl.addEventListener('input', () => {
+      dict.rate = parseFloat(rateEl.value);
+      rateVal.textContent = dict.rate.toFixed(1) + '×';
+    });
+
+    // AI 朗读：默认开启（开关按钮已隐藏），走 AI 大模型自然语音；不可用时自动回退浏览器朗读
+    const aiTtsEl = $d('dictAiTts');
+    const aiTtsHint = $d('dictAiTtsHint');
+    const syncAiTtsHint = () => {
+      if (!aiTtsEl.checked) { aiTtsHint.textContent = ''; return; }
+      if (dictTtsAvailable()) aiTtsHint.textContent = '✓ 已启用';
+      else aiTtsHint.textContent = '⚠ 当前服务商不支持 AI 朗读，将回退浏览器';
+    };
+    dict.useAiTts = true;     // 强制开启（隐藏开关，无需用户切换）
+    aiTtsEl.checked = true;
+    syncAiTtsHint();
+    aiTtsEl.addEventListener('change', () => {
+      dict.useAiTts = aiTtsEl.checked;
+      localStorage.setItem(AI_TTS_KEY, dict.useAiTts ? '1' : '0');
+      syncAiTtsHint();
+      if (dict.useAiTts && !dictTtsAvailable()) {
+        toast('当前服务商（' + (AIGrader.getProviderConfig(Storage.Settings.get().provider).name) + '）暂不支持 AI 语音合成，已自动回退浏览器朗读。可换成 OpenAI 或支持 /v1/audio/speech 的自定义网关。', 'warning', 5000);
+      } else if (dict.useAiTts) {
+        toast('AI 朗读已开启', 'success', 1500);
+      }
+    });
+
+    // 拍照 / 上传 → 优先用 AI 多模态大模型识别单词/句子（中英文），失败回退本地 OCR
+    // 支持三种来源：① 📷 拍照（调用摄像头，单张）② 🖼️ 选择图片（可一次多选）
+    // 多张图会逐张识别并合并填入手动输入框
+    cameraBtn.addEventListener('click', () => cameraInput.click());
+    fileBtn.addEventListener('click', () => fileInput.click());
+
+    // 识别单张图：返回 { count, engine }；预览图与文本框追加由外层统一处理
+    async function recognizeOneFile(file, index, total) {
+      photoName.textContent = total > 1 ? `(${index + 1}/${total}) ${file.name}` : file.name;
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      photoPreview.appendChild(img);
+      const settings = Storage.Settings.get();
+      const apiKey = (settings.apiKey || '').trim();
+      const compressed = await OCR.compressImage(file, 1600, 0.85).catch(() => file);
+      const dataUrl = await OCR.fileToDataURL(compressed);
+
+      let text = '';
+      let engine = 'tesseract';
+      // 1) 已填 Key → 优先用 AI 多模态模型把图中单词/句子逐行识别
+      if (apiKey) {
+        try {
+          toast(`AI 识别中 (${index + 1}/${total})…`, 'info', 1500);
+          text = await AIGrader.recognizeDictationItems(dataUrl, {
+            provider: settings.provider,
+            apiKey,
+          });
+          engine = 'ai';
+        } catch (e) {
+          console.warn('AI 看图识别失败，回退本地 OCR：', e.message);
+        }
+      } else if (total === 1) {
+        toast('未填 API Key，改用本地识别（准确率较低，仅英文）', 'warning', 4000);
+      }
+      // 2) AI 没识别出内容 / 未填 Key / AI 报错 → 本地 Tesseract 兜底
+      if (!text || !text.trim()) {
+        text = await OCR.recognize(compressed, () => {});
+        engine = 'tesseract';
+      }
+      const items = parseDictationItems(text);
+      if (items.length) {
+        const cur = textEl.value.trim();
+        textEl.value = (cur ? cur + '\n' : '') + items.join('\n');
+      }
+      return { count: items.length, engine };
+    }
+
+    // 批量识别入口：逐张处理并合并结果
+    async function processPhotoFiles(files) {
+      const arr = Array.from(files || []);
+      if (!arr.length) return;
+      photoPreview.innerHTML = '';
+      let totalNew = 0, anyAi = false, anyOcr = false;
+      try {
+        for (let i = 0; i < arr.length; i++) {
+          const r = await recognizeOneFile(arr[i], i, arr.length);
+          totalNew += r.count;
+          if (r.engine === 'ai') anyAi = true; else anyOcr = true;
+        }
+        const allItems = parseDictationItems(textEl.value);
+        countEl.textContent = allItems.length + ' 条';
+        renderDictationList(allItems);
+        // 识别完成后跳转到「手动输入」标签，方便用户直接检查并修改内容
+        setDictInput('manual');
+        if (totalNew) {
+          const tag = anyAi && !anyOcr ? 'AI 大模型' : (anyOcr && !anyAi ? '本地' : 'AI 大模型 + 本地');
+          toast(`识别完成（${tag}），已填入 ${totalNew} 条`, 'success', 1800);
+        } else {
+          toast('未识别到文字，请手动输入', 'warning', 2500);
+        }
+      } catch (e) {
+        toast('识别失败：' + (e.message || e), 'error', 3500);
+      }
+    }
+
+    cameraInput.addEventListener('change', async () => {
+      if (!cameraInput.files || !cameraInput.files.length) return;
+      await processPhotoFiles(cameraInput.files);
+      cameraInput.value = ''; // 允许再次选择同一张
+    });
+    fileInput.addEventListener('change', async () => {
+      if (!fileInput.files || !fileInput.files.length) return;
+      await processPhotoFiles(fileInput.files);
+      fileInput.value = ''; // 允许再次选择相同图片
+    });
+
+    clearBtn.addEventListener('click', () => {
+      textEl.value = '';
+      countEl.textContent = '0 条';
+      photoPreview.innerHTML = '';
+      photoName.textContent = '';
+      stopDictation();
+      renderDictationList([]);
+    });
+
+    // 播放控制
+    $d('dictPlayBtn').addEventListener('click', startDictation);
+    $d('dictPauseBtn').addEventListener('click', toggleDictationPause);
+    $d('dictStopBtn').addEventListener('click', stopDictation);
+    $d('dictPrevBtn').addEventListener('click', () => stepDictation(-1));
+    $d('dictNextBtn').addEventListener('click', () => stepDictation(1));
+
+    // 预加载语音列表（关键：否则首次 speak 时 voices 为空，朗读会静默失败）
+    loadDictVoices();
+  }
+
+  // 预加载可用语音；部分浏览器（Chrome）首次 getVoices() 为空，需等 voiceschanged 事件
+  function loadDictVoices() {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      dictVoices = window.speechSynthesis.getVoices() || [];
+      window.speechSynthesis.onvoiceschanged = () => {
+        dictVoices = window.speechSynthesis.getVoices() || [];
+      };
+    } catch (e) {
+      dictVoices = [];
+    }
+  }
+
+  // 为给定语言挑选最匹配的语音（精确匹配 > 同语种前缀 > 无匹配返回 null 让浏览器自选）
+  function pickVoice(lang) {
+    if (!dictVoices || !dictVoices.length) return null;
+    const exact = dictVoices.find(v => v.lang === lang);
+    if (exact) return exact;
+    const base = (lang || '').split('-')[0].toLowerCase();
+    const sameBase = dictVoices.find(v => (v.lang || '').toLowerCase().startsWith(base));
+    return sameBase || null;
+  }
+
+  // 当前服务商 + Key 是否支持 AI 语音合成（TTS）
+  function dictTtsAvailable() {
+    const settings = Storage.Settings.get() || {};
+    const apiKey = (settings.apiKey || '').trim();
+    if (!apiKey) return false;
+    return AIGrader.supportsTTS(settings.provider);
+  }
+
+  // 按行解析为词条（每行一个单词 / 句子）
+  function parseDictationItems(text) {
+    return (text || '')
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  // 语言判定：自动模式下含中文用 zh-CN，否则 en-US
+  function langForItem(text) {
+    if (dict.lang === 'auto') return /[一-鿿]/.test(text) ? 'zh-CN' : 'en-US';
+    return dict.lang;
+  }
+
+  function renderDictationList(items) {
+    const listEl = document.getElementById('dictList');
+    if (!items || !items.length) { listEl.innerHTML = ''; return; }
+    listEl.innerHTML = items.map((t, i) =>
+      `<li class="dict-item" data-idx="${i}">` +
+      `<span class="dict-item-index">${i + 1}</span>` +
+      `<span class="dict-item-text">${Renderer.escapeHtml(t)}</span>` +
+      `</li>`
+    ).join('');
+  }
+
+  function highlightDictItem(idx) {
+    document.querySelectorAll('#dictList .dict-item').forEach(li => {
+      li.classList.toggle('active', Number(li.dataset.idx) === idx);
+    });
+  }
+
+  function startDictation() {
+    if (!('speechSynthesis' in window)) {
+      toast('当前浏览器不支持语音朗读，请用 Chrome / Edge / Safari', 'error', 3500);
+      return;
+    }
+    const textEl = document.getElementById('dictText');
+    const items = parseDictationItems(textEl.value);
+    if (!items.length) { toast('请先输入或上传单词', 'warning', 2000); return; }
+    stopDictation();
+    dict.items = items;
+    dict.index = 0;
+    dict.playing = true;
+    dict.paused = false;
+    dict.gapWaiting = false;
+    // 若开启了 AI 朗读但当前服务商不支持，顺手提示一次（朗读仍会走浏览器 TTS）
+    if (dict.useAiTts && !dictTtsAvailable()) {
+      toast('当前服务商不支持 AI 朗读，已用浏览器朗读', 'warning', 2500);
+    }
+    renderDictationList(items);
+    updateDictControls();
+    speakDictItem();
+  }
+
+  // 朗读一条：优先 AI 大模型语音（更自然），不可用时回退浏览器内置 TTS
+  function speakDictItem() {
+    if (!dict.playing || dict.paused) return;
+    if (dict.index >= dict.items.length) { finishDictation(); return; }
+    highlightDictItem(dict.index);
+    const text = dict.items[dict.index];
+    const lang = langForItem(text);
+    // 仅在「开启 AI 朗读 且 当前服务商确实支持 TTS 且已填 Key」时使用 AI 语音
+    if (dict.useAiTts && dictTtsAvailable()) {
+      playAiTts(text, lang);
+    } else {
+      playBrowserTts(text, lang);
+    }
+  }
+
+  // 浏览器内置 Web Speech API 朗读（原逻辑，离线可用、依赖系统语音）
+  function playBrowserTts(text, lang) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = dict.rate;
+    const voice = pickVoice(lang);
+    if (voice) u.voice = voice;
+    u.onend = () => onDictItemDone();
+    u.onerror = () => {
+      // 朗读失败：跳过本条继续下一条（避免卡住），间隔缩短
+      if (!dict.playing) return;
+      dict.timer = setTimeout(() => {
+        if (dict.paused) { dict.gapWaiting = true; return; }
+        dict.index++;
+        speakDictItem();
+      }, 400);
+    };
+    const synth = window.speechSynthesis;
+    if (synth.paused) synth.resume();
+    synth.speak(u);
+  }
+
+  // AI 大模型语音合成朗读：请求 /v1/audio/speech 拿到音频后用 <audio> 播放，
+  // 失败则自动回退浏览器朗读，保证听写流程不被打断。
+  // AI 大模型语音合成朗读：请求 /v1/audio/speech 拿到音频后用 <audio> 播放，
+  // 失败则自动回退浏览器朗读，保证听写流程不被打断。
+  async function playAiTts(text, lang) {
+    const settings = Storage.Settings.get() || {};
+    const apiKey = (settings.apiKey || '').trim();
+    try {
+      let url = dictAudioCache.get(text);
+      if (!url) {
+        url = await AIGrader.textToSpeech(text, { provider: settings.provider, apiKey, speed: dict.rate });
+        dictAudioCache.set(text, url);
+      }
+      if (!dict.playing) return;
+      // 停掉上一个可能还在播放的音频
+      if (dictAudio) { try { dictAudio.pause(); } catch (e) {} }
+      dictAudio = new Audio(url);
+      dictAudio.onended = () => onDictItemDone();
+      dictAudio.onerror = () => {
+        console.warn('AI 音频播放出错，回退浏览器朗读');
+        if (dict.playing) playBrowserTts(text, lang);
+      };
+      await dictAudio.play();
+    } catch (e) {
+      console.warn('AI 朗读失败，回退浏览器 TTS：', e.message);
+      if (dict.playing) playBrowserTts(text, lang);
+    }
+  }
+
+  // 一条朗读结束（浏览器 TTS）：等待间隔后进入下一条
+  function onDictItemDone() {
+    if (!dict.playing) return;
+    dict.timer = setTimeout(() => {
+      if (dict.paused) { dict.gapWaiting = true; return; }
+      dict.index++;
+      speakDictItem();
+    }, dict.interval * 1000);
+  }
+
+  function toggleDictationPause() {
+    if (!dict.playing) return;
+    if (dict.paused) {
+      if (dictAudio && dictAudio.paused && !dictAudio.ended) {
+        dictAudio.play().catch(() => {});
+      } else {
+        window.speechSynthesis.resume();
+      }
+      dict.paused = false;
+      if (dict.gapWaiting) { dict.gapWaiting = false; dict.index++; speakDictItem(); }
+    } else {
+      if (dictAudio && !dictAudio.paused && !dictAudio.ended) dictAudio.pause();
+      else window.speechSynthesis.pause();
+      dict.paused = true;
+    }
+    updateDictControls();
+  }
+
+  function stopDictation() {
+    dict.playing = false;
+    dict.paused = false;
+    dict.gapWaiting = false;
+    if (dict.timer) { clearTimeout(dict.timer); dict.timer = null; }
+    if (dictAudio) { try { dictAudio.pause(); } catch (e) {} dictAudio = null; }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    updateDictControls();
+    highlightDictItem(-1);
+  }
+
+  function finishDictation() {
+    dict.playing = false;
+    dict.paused = false;
+    dict.gapWaiting = false;
+    if (dict.timer) { clearTimeout(dict.timer); dict.timer = null; }
+    updateDictControls();
+    toast('朗读完成 🎉', 'success', 1800);
+  }
+
+  // 上一个 / 下一个：播放中则跳转并继续朗读，未播放则仅高亮
+  function stepDictation(dir) {
+    if (!dict.items.length) return;
+    if (dict.timer) { clearTimeout(dict.timer); dict.timer = null; }
+    if (dictAudio) { try { dictAudio.pause(); } catch (e) {} dictAudio = null; }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    dict.gapWaiting = false;
+    dict.index = Math.max(0, Math.min(dict.items.length - 1, dict.index + dir));
+    if (dict.playing) { dict.paused = false; speakDictItem(); }
+    else highlightDictItem(dict.index);
+  }
+
+  function updateDictControls() {
+    const playBtn = document.getElementById('dictPlayBtn');
+    const pauseBtn = document.getElementById('dictPauseBtn');
+    if (dict.playing) {
+      playBtn.hidden = true;
+      pauseBtn.hidden = false;
+      pauseBtn.textContent = dict.paused ? '▶ 继续' : '⏸ 暂停';
+    } else {
+      playBtn.hidden = false;
+      pauseBtn.hidden = true;
+    }
+  }
 
   function init() {
     bindEvents();
     Membership.init(); // 会员模块（未配置后端地址时内部直接 return，不干预）
     initImageLightbox(); // 注册图片灯箱（点击缩略图放大）的全局点击委托
+    initDictation();
     initSelectionAnnotation();
     initSplitter();
 
