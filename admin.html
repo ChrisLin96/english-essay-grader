@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>会员管理后台 · 英语作文批改</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1f2328; --muted: #6b7280;
+    --border: #e5e7eb; --primary: #2563eb; --primary-dark: #1d4ed8;
+    --danger: #dc2626; --success: #16a34a; --warning: #d97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); padding: 24px; line-height: 1.6; }
+  .container { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin-bottom: 12px; }
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+  input, select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+  input:focus, select:focus { outline: none; border-color: var(--primary); }
+  button { background: var(--primary); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  button:hover { background: var(--primary-dark); }
+  button.secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  button.danger { background: var(--danger); }
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  .row > div { flex: 1; }
+  .row button { height: 39px; flex: 0 0 auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  .badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+  .badge.active { background: #dcfce7; color: var(--success); }
+  .badge.expired { background: #fee2e2; color: var(--danger); }
+  .badge.used { background: #f3f4f6; color: var(--muted); }
+  .badge.unused { background: #dcfce7; color: var(--success); }
+  .codes-result { margin-top: 10px; }
+  .code-item { font-family: monospace; font-size: 14px; background: #f9fafb; border: 1px dashed var(--border); border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .code-item button { padding: 4px 10px; font-size: 12px; }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 14px; display: none; z-index: 99; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>会员管理后台</h1>
+  <div class="sub">英语作文批改 · 激活码 / 会员管理</div>
+
+  <div class="card">
+    <h2>① 后端地址</h2>
+    <div class="row">
+      <div><label>Worker 部署后的地址（形如 https://xxx.your-subdomain.workers.dev）</label>
+      <input id="apiBase" placeholder="https://xxx.workers.dev"></div>
+      <button onclick="saveBase()">保存</button>
+    </div>
+  </div>
+
+  <div class="card" id="loginCard">
+    <h2>② 管理员登录</h2>
+    <input type="password" id="pwd" placeholder="管理员密码（Worker 里设的 ADMIN_PASSWORD）">
+    <button onclick="login()">登录</button>
+  </div>
+
+  <div id="mainPanel" style="display:none;">
+    <div class="card">
+      <h2>③ 生成激活码</h2>
+      <div class="row">
+        <div><label>会员时长</label>
+        <select id="days">
+          <option value="30">30 天</option>
+          <option value="90">90 天</option>
+          <option value="180">180 天</option>
+          <option value="365">365 天</option>
+        </select></div>
+        <div><label>数量</label><input id="count" type="number" value="1" min="1" max="100"></div>
+        <button onclick="genCodes()">生成</button>
+      </div>
+      <div class="codes-result" id="codesResult"></div>
+    </div>
+
+    <div class="card">
+      <h2>④ 用户列表</h2>
+      <table>
+        <thead><tr><th>手机号 / 账号</th><th>会员到期</th><th>状态</th></tr></thead>
+        <tbody id="usersBody"><tr><td colspan="3" style="color:var(--muted)">点击下方按钮加载</td></tr></tbody>
+      </table>
+      <button class="secondary" onclick="loadUsers()" style="margin-top:10px">刷新用户</button>
+    </div>
+
+    <div class="card">
+      <h2>⑤ 激活码列表</h2>
+      <table>
+        <thead><tr><th>激活码</th><th>时长</th><th>状态</th><th>使用者</th></tr></thead>
+        <tbody id="codesBody"><tr><td colspan="4" style="color:var(--muted)">点击下方按钮加载</td></tr></tbody>
+      </table>
+      <button class="secondary" onclick="loadCodes()" style="margin-top:10px">刷新激活码</button>
+    </div>
+
+    <button class="danger" onclick="logout()">退出登录</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const api = () => (localStorage.getItem('eg_admin_base') || '').replace(/\/+$/, '');
+  const token = () => localStorage.getItem('eg_admin_token') || '';
+
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.style.display = 'block';
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.display = 'none'; }, 2500);
+  }
+
+  function saveBase() {
+    const b = $('apiBase').value.trim().replace(/\/+$/, '');
+    localStorage.setItem('eg_admin_base', b);
+    toast(b ? '后端地址已保存' : '后端地址已清空');
+  }
+
+  async function req(path, method, body, useToken) {
+    const base = api();
+    if (!base) { toast('请先填写并保存后端地址'); throw new Error('no base'); }
+    const headers = { 'Content-Type': 'application/json' };
+    if (useToken && token()) headers['Authorization'] = 'Bearer ' + token();
+    const res = await fetch(base + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { toast(data.error || ('请求失败 HTTP ' + res.status)); throw new Error(data.error || 'fail'); }
+    return data;
+  }
+
+  async function login() {
+    try {
+      const data = await req('/api/admin/login', 'POST', { password: $('pwd').value }, false);
+      localStorage.setItem('eg_admin_token', data.token);
+      $('loginCard').style.display = 'none';
+      $('mainPanel').style.display = 'block';
+      toast('登录成功');
+      loadUsers(); loadCodes();
+    } catch (e) {}
+  }
+
+  function logout() {
+    localStorage.removeItem('eg_admin_token');
+    $('loginCard').style.display = 'block';
+    $('mainPanel').style.display = 'none';
+    toast('已退出');
+  }
+
+  async function genCodes() {
+    try {
+      const data = await req('/api/admin/gencode', 'POST', {
+        days: parseInt($('days').value, 10),
+        count: parseInt($('count').value, 10) || 1,
+      }, true);
+      $('codesResult').innerHTML = '<h2 style="margin-top:12px">本次生成的激活码（请复制发给用户）</h2>' +
+        data.codes.map(c => `<div class="code-item"><span>${c}</span><button onclick="copyCode('${c}', this)">复制</button></div>`).join('');
+      toast('已生成 ' + data.codes.length + ' 个激活码');
+      loadCodes();
+    } catch (e) {}
+  }
+
+  function copyCode(code, btn) {
+    navigator.clipboard.writeText(code).then(() => { btn.textContent = '已复制'; setTimeout(() => btn.textContent = '复制', 1500); });
+  }
+
+  function fmtTime(ms) {
+    if (!ms) return '—';
+    const d = new Date(ms);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  async function loadUsers() {
+    try {
+      const data = await req('/api/admin/users', 'GET', null, true);
+      $('usersBody').innerHTML = data.users.length ? data.users.map(u =>
+        `<tr><td>${u.phone}</td><td>${fmtTime(u.expiresAt)}</td><td><span class="badge ${u.active ? 'active' : 'expired'}">${u.active ? '有效' : '已过期'}</span></td></tr>`
+      ).join('') : '<tr><td colspan="3" style="color:var(--muted)">暂无用户</td></tr>';
+    } catch (e) {}
+  }
+
+  async function loadCodes() {
+    try {
+      const data = await req('/api/admin/codes', 'GET', null, true);
+      $('codesBody').innerHTML = data.codes.length ? data.codes.map(c =>
+        `<tr><td style="font-family:monospace">${c.code}</td><td>${c.days} 天</td><td><span class="badge ${c.used ? 'used' : 'unused'}">${c.used ? '已用' : '未用'}</span></td><td>${c.usedBy || '—'}</td></tr>`
+      ).join('') : '<tr><td colspan="4" style="color:var(--muted)">暂无激活码</td></tr>';
+    } catch (e) {}
+  }
+
+  // 初始化
+  $('apiBase').value = localStorage.getItem('eg_admin_base') || '';
+  if (token()) {
+    // 尝试恢复登录态
+    loadUsers().then(() => { $('loginCard').style.display = 'none'; $('mainPanel').style.display = 'block'; })
+      .catch(() => { localStorage.removeItem('eg_admin_token'); });
+  }
+</script>
+</body>
+</html>

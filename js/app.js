@@ -783,7 +783,8 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
         // 把真实报错记录下来，稍后在 UI 清楚展示，同时尽量用本地 OCR 兜底（不再静默返回空）
         aiError = e.message;
       }
-    } else {
+    } else if (!Membership.isEnabled()) {
+      // 会员模式下不需要用户填 Key，静默走本地 OCR；免费模式才提示
       toast('未填写 API Key，已改用本地识别（准确率较低）。如需 AI 看图，请在「设置」中选一个支持视觉的服务商并填 Key（如通义千问）。', 'warning', 7000);
     }
 
@@ -823,7 +824,10 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     Storage.Student.set(studentName);
 
     const settings = Storage.Settings.get();
-    if (!settings.apiKey) {
+    if (Membership.isEnabled()) {
+      // 会员模式：无需用户填 Key，改为校验登录 + 会员有效期
+      if (!(await Membership.ensureActive())) return;
+    } else if (!settings.apiKey) {
       toast('请先在设置中填写 API Key', 'warning', 3000);
       closeInputDialog();
       setTimeout(openSettings, 200);
@@ -884,7 +888,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }, 2000);
 
     try {
-      const result = await AIGrader.grade(text, settings);
+      const result = await Membership.gradeOrDirect(text, settings);
       clearInterval(msgTimer);
 
       // 自动定位错误位置
@@ -1172,7 +1176,9 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
     if (skipped > 0) toast(`${skipped} 张因未识别或文字过短已跳过`, 'warning', 4000);
     const settings = Storage.Settings.get();
-    if (!settings.apiKey) {
+    if (Membership.isEnabled()) {
+      if (!(await Membership.ensureActive())) return;
+    } else if (!settings.apiKey) {
       toast('请先在设置中填写 API Key', 'warning', 3000);
       closeInputDialog();
       setTimeout(openSettings, 200);
@@ -1213,7 +1219,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
       const placeholder = renderBatchCard(item, 'grading');
       try {
         const result = await withRetry(
-          () => AIGrader.grade(item.text, settings),
+          () => Membership.gradeOrDirect(item.text, settings),
           {
             retries: 3,
             onRetry: (attempt) => {
@@ -1336,7 +1342,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
     }
     try {
       const result = await withRetry(
-        () => AIGrader.grade(item.text, settings),
+        () => Membership.gradeOrDirect(item.text, settings),
         {
           retries: 3,
           onRetry: (attempt) => {
@@ -2795,6 +2801,7 @@ Coherence & Cohesion（20分）：连贯与衔接，论证前后一致，段落�
 
   function init() {
     bindEvents();
+    Membership.init(); // 会员模块（未配置后端地址时内部直接 return，不干预）
     initImageLightbox(); // 注册图片灯箱（点击缩略图放大）的全局点击委托
     initDictation();
     initSelectionAnnotation();

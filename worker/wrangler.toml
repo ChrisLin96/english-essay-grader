@@ -1,0 +1,25 @@
+name = "essay-grader-api"
+main = "index.js"
+compatibility_date = "2024-11-01"
+
+# KV 命名空间：在 Cloudflare 后台创建 3 个 KV 后，把它们的 id 填到下面
+# 创建方法见 DEPLOY_GUIDE.md 第 2 步
+[[kv_namespaces]]
+binding = "USERS"
+id = "PASTE_USERS_KV_ID"
+
+[[kv_namespaces]]
+binding = "CODES"
+id = "PASTE_CODES_KV_ID"
+
+[[kv_namespaces]]
+binding = "AUTH"
+id = "PASTE_AUTH_KV_ID"
+
+# 环境变量：管理员密码请务必改成你自己的
+[vars]
+ADMIN_PASSWORD = "change-me-to-a-strong-password"
+AI_PROVIDER = "qwen"
+AI_KEY = ""
+AI_MODEL = ""
+AI_BASE_URL = ""
