@@ -178,9 +178,7 @@
   /* 批量 / 全部导出：只打印合并副本，避免与原始结果区重复 */
   body.exporting-all > #essayResult { display: none !important; }
   body.exporting-all #batchResult,
-  body.exporting-all #homeLayout,
-  body.exporting-all #dictationView,
-  body.exporting-all .tab-bar { display: none !important; }
+  body.exporting-all #homeLayout { display: none !important; }
   body.exporting-all #printAll { display: block !important; }
   /* 导出副本里的每篇报告：用 class 定位（无 id），避免与原始 #essayResult 的隐藏/定位规则冲突 */
   body.exporting-all .print-all-item .essay-result {
